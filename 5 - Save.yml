@@ -5,6 +5,21 @@
   "tags": "",
   "flowPlugins": [
     {
+      "name": "Save File - JS Delete Trickplay Folder 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n\n  // Read the opt-in flag from the library variable. Blank/unset/anything other than \"true\" = no-op.\n  const deleteEnabled = String(args.userVariables.library.delete_trickplay || \"\").trim().toLowerCase() === \"true\";\n\n  // This node only sits on the replace-success path, so reaching it already means\n  // the compressed file replaced the original in place. When the flag is off we\n  // still must pass through so DONE is reached.\n  if (!deleteEnabled) {\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1, // Continue the workflow\n      variables: args.variables, // Pass the updated variables\n    };\n  }\n\n  const fs = require(\"fs\");\n  const path = require(\"path\");\n\n  // Derive the ORIGINAL media path from originalLibraryFile._id, NOT inputFileObj:\n  // the earlier rename_group_compressed node may have renamed inputFileObj to\n  // \"<name>-compressed\", but the Jellyfin trickplay folder is named after the\n  // original media file that just got replaced in place.\n  const origId = String(args.originalLibraryFile._id || \"\");\n  const dir = path.dirname(origId);\n  const ext = path.extname(origId);\n  const base = path.basename(origId, ext);\n  const fullName = path.basename(origId);\n\n  // Jellyfin's trickplay folder is named after the media with a \".trickplay\"\n  // extension appended. Naming varies between versions (stripped extension vs.\n  // full file name), so check BOTH conventions and delete whichever exists. Both\n  // names are specific to this exact media file, so there is no risk of touching\n  // an unrelated folder.\n  const candidates = [\n    path.join(dir, base + \".trickplay\"),\n    path.join(dir, fullName + \".trickplay\"),\n  ];\n\n  // Wrapped in try/catch so a deletion failure only warns and never fails the\n  // flow (mirrors the non-fatal tolerance of neighboring Save nodes). The\n  // function always returns the pass-through object so DONE is reached.\n  try {\n    for (const candidate of candidates) {\n      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {\n        fs.rmSync(candidate, { recursive: true, force: true });\n        console.log(`delete_trickplay: deleted trickplay folder \"${candidate}\"`);\n      }\n    }\n  } catch (err) {\n    console.log(`delete_trickplay: WARNING failed to delete trickplay folder: ${err.message}`);\n  }\n\n  return {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1, // Continue the workflow\n    variables: args.variables, // Pass the updated variables\n  };\n};\n"
+      },
+      "id": "DelTrkPly1",
+      "position": {
+        "x": 1661.3992283374662,
+        "y": 1960
+      },
+      "fpEnabled": true
+    },
+    {
       "name": "Save File - Review file size too small ⚠️",
       "sourceRepo": "Community",
       "pluginName": "comment",
@@ -89,6 +104,65 @@
       "position": {
         "x": 1661.3992283374662,
         "y": 1539.0271476751702
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "ℹ️ You can use a library variable rename_group_compressed to rename the release-group token to 'compressed' when the VIDEO was actually re-encoded this run (audio-only Opus recompression does not trigger this).\nrename_group_compressed = true. Renames Name-group.ext -> Name-compressed.ext (or appends -compressed if no group token present). No-op if unset, or if the video wasn't actually re-encoded.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "RnCmpCmt1",
+      "position": {
+        "x": 1661.3992283374662,
+        "y": 1400
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - Check Variable - rename_group_compressed 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.userVariables.library.rename_group_compressed}}}",
+        "value": "true"
+      },
+      "id": "RnCmpChk1",
+      "position": {
+        "x": 1661.3992283374662,
+        "y": 1620
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - Check Variable - video_was_compressed 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.variables.user.video_was_compressed}}}",
+        "value": "true"
+      },
+      "id": "RnCmpChk2",
+      "position": {
+        "x": 1661.3992283374662,
+        "y": 1700
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - JS Rename Group Compressed 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n\n  // Read the opt-in flag from the library variable. Blank/unset/anything other than \"true\" = no-op.\n  const renameEnabled = String(args.userVariables.library.rename_group_compressed || \"\").trim().toLowerCase() === \"true\";\n\n  // Only rename when the VIDEO was actually re-encoded this run\n  // (video_was_compressed is set by 4 - Video.yml at its real-encode choke points;\n  // audio-only Opus recompression in 3 - Audio.yml does not set it).\n  const videoWasCompressed = String(args.variables.user.video_was_compressed || \"\").trim().toLowerCase() === \"true\";\n\n  if (!renameEnabled || !videoWasCompressed) {\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1, // Continue the workflow\n      variables: args.variables, // Pass the updated variables\n    };\n  }\n\n  const fs = require(\"fs\");\n  const path = require(\"path\");\n\n  // Tdarr's save plugins (Replace Original File / Move To Directory) derive the\n  // destination filename from inputFileObj._id, not inputFileObj.file, so that's\n  // what we must read from and write back to for the rename to actually take effect.\n  const currentPath = args.inputFileObj._id;\n  const dir = path.dirname(currentPath);\n  const ext = path.extname(currentPath);\n  const baseName = path.basename(currentPath, ext);\n\n  const lastHyphenIndex = baseName.lastIndexOf(\"-\");\n  const trailingToken = lastHyphenIndex === -1 ? \"\" : baseName.slice(lastHyphenIndex + 1);\n  // Only treat the trailing token as a release-group tag if it looks like one (no\n  // whitespace). Otherwise a title-internal hyphen (e.g. \"Spider-Man (2019)\") gets\n  // mistaken for a group separator and the title/year gets truncated.\n  const hasGroupToken = lastHyphenIndex !== -1 && trailingToken.length > 0 && !/\\s/.test(trailingToken);\n\n  let newBaseName;\n  if (hasGroupToken && trailingToken.toLowerCase() === \"compressed\") {\n    // Idempotent: already renamed, nothing to do\n    console.log(`rename_group_compressed: \"${baseName}\" already ends in -compressed, skipping`);\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1,\n      variables: args.variables,\n    };\n  } else if (hasGroupToken) {\n    // Replace the release-group token after the last hyphen with \"compressed\"\n    newBaseName = `${baseName.slice(0, lastHyphenIndex)}-compressed`;\n  } else {\n    // No release-group token present (or trailing token isn't a group tag): append the marker\n    newBaseName = `${baseName}-compressed`;\n  }\n\n  const newPath = path.join(dir, `${newBaseName}${ext}`);\n\n  // Guard against clobbering an existing file at the target path (e.g. a prior\n  // run already produced \"<name>-compressed.ext\"). fs.renameSync would silently\n  // overwrite it, so fall through to a normal save with the original file instead.\n  if (fs.existsSync(newPath)) {\n    console.log(`rename_group_compressed: target \"${newPath}\" already exists, skipping rename to avoid overwrite`);\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1,\n      variables: args.variables,\n    };\n  }\n\n  try {\n    fs.renameSync(currentPath, newPath);\n    console.log(`rename_group_compressed: renamed \"${currentPath}\" -> \"${newPath}\"`);\n  } catch (err) {\n    console.log(`rename_group_compressed: WARNING failed to rename \"${currentPath}\" -> \"${newPath}\": ${err.message}`);\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1,\n      variables: args.variables,\n    };\n  }\n\n  args.inputFileObj._id = newPath;\n  args.inputFileObj.file = newPath;\n\n  // Rename the extracted subtitle sidecars to match the renamed video so\n  // Jellyfin/Plex keep associating them as external subs. Stage 2 already moved\n  // them to the video's FINAL folder (not the cache), so we re-derive that folder\n  // the SAME provable way Tdarr's moveToDirectory (keepRelativePath, node\n  // nSj2dyRzi) placed the video: test_mode -> output_dir_done + the library-\n  // relative subpath of the ORIGINAL library file; otherwise the original file's\n  // own folder.\n  const testMode = String(args.userVariables.library.test_mode || \"\").trim().toLowerCase() === \"true\";\n  const outputDirDone = testMode\n    ? String(args.userVariables.library.output_dir_done || \"\").trim()\n    : \"\";\n\n  // Defense-in-depth backstop: the flow's early gate (2 - Prep.yml) should already\n  // have failed the flow fast, before transcoding, when test_mode is on but\n  // output_dir_done is empty. If that gate was somehow bypassed we refuse to\n  // silently continue — there is no provable destination for the sidecars, so we\n  // surface the misconfiguration loudly instead of skipping. Thrown OUTSIDE the\n  // sidecar try/catch below so it propagates as a real flow failure.\n  if (testMode && !outputDirDone) {\n    throw new Error(\n      \"rename_group_compressed: test_mode is enabled but output_dir_done is empty/unset; \"\n      + \"cannot locate the transcoded video's folder to rename its subtitle sidecars. \"\n      + \"Set the output_dir_done library variable (the flow's early gate in 2 - Prep should \"\n      + \"catch this before transcoding).\"\n    );\n  }\n\n  // Wrapped in its own try/catch so a sidecar failure only warns and never undoes\n  // the (already successful) video rename.\n  try {\n    let sidecarDir;\n    if (testMode) {\n      // Mirror moveToDirectory's keepRelativePath (node nSj2dyRzi) exactly: strip the\n      // library-folder prefix from the ORIGINAL library file's full path, then drop\n      // the file name. That library-relative subpath is where the video (and the\n      // stage-2 subtitle moves, which use the same keepRelativePath) were placed\n      // under output_dir_done. path.relative on meta.Directory is avoided; we derive\n      // from originalLibraryFile._id, the exact field Tdarr's own move node reads.\n      const libFolder = String(args.librarySettings.folder || \"\");\n      const originalId = String(args.originalLibraryFile._id || \"\");\n      const relStem = originalId.startsWith(libFolder) ? originalId.slice(libFolder.length) : originalId;\n      // Drop the file name; an empty subStem (video directly in the library root)\n      // yields path.join(outputDirDone, \"\") === outputDirDone, so no special-casing.\n      const subStem = relStem.split(\"/\").slice(0, -1).join(\"/\");\n      sidecarDir = path.join(outputDirDone, subStem);\n    } else {\n      // In-place mode: sidecars sit in the original video file's own folder.\n      sidecarDir = path.dirname(String(args.originalLibraryFile._id || \"\"));\n    }\n\n    const SUBTITLE_EXTS = [\"srt\", \"ass\", \"sub\", \"idx\"];\n    // readdirSync throws ENOENT if the folder doesn't exist; the outer catch treats\n    // that as \"no sidecar directory, nothing to rename\" without affecting the video\n    // rename. Extension matching is case-insensitive (entry ext lower-cased below).\n    for (const entry of fs.readdirSync(sidecarDir)) {\n      const entryExt = path.extname(entry).slice(1).toLowerCase();\n      if (!SUBTITLE_EXTS.includes(entryExt)) continue;\n      // Match the video's sidecars: \"<baseName>.srt\" (bare) or \"<baseName>.en.srt\"\n      // (language-suffixed). The literal \".\" after baseName means \"MovieName2.srt\"\n      // does NOT match \"MovieName.\".\n      if (!entry.startsWith(`${baseName}.`)) continue;\n\n      // Preserve whatever follows the old base name (e.g. \".en.srt\" or \".srt\").\n      const suffix = entry.slice(baseName.length);\n      const oldSidecarPath = path.join(sidecarDir, entry);\n      const newSidecarPath = path.join(sidecarDir, `${newBaseName}${suffix}`);\n\n      if (oldSidecarPath === newSidecarPath) continue;\n\n      try {\n        if (fs.existsSync(newSidecarPath)) {\n          console.log(`rename_group_compressed: sidecar target \"${newSidecarPath}\" already exists, skipping to avoid overwrite`);\n          continue;\n        }\n        fs.renameSync(oldSidecarPath, newSidecarPath);\n        console.log(`rename_group_compressed: renamed sidecar \"${oldSidecarPath}\" -> \"${newSidecarPath}\"`);\n      } catch (err) {\n        // One bad sidecar shouldn't skip the rest.\n        console.log(`rename_group_compressed: WARNING failed to rename sidecar \"${oldSidecarPath}\" -> \"${newSidecarPath}\": ${err.message}`);\n      }\n    }\n  } catch (err) {\n    if (err && err.code === \"ENOENT\") {\n      // Benign: the sidecar directory doesn't exist (e.g. no subtitles were\n      // extracted for this file). Nothing to rename.\n      console.log(`rename_group_compressed: no sidecar directory to scan, nothing to rename (${err.message})`);\n    } else {\n      // Unexpected (permissions, malformed args, etc.) — surface distinctly, but\n      // still never undo the already-successful video rename.\n      console.log(`rename_group_compressed: WARNING sidecar rename step failed unexpectedly: ${err.message}`);\n    }\n  }\n\n  return {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1, // Continue the workflow\n    variables: args.variables, // Pass the updated variables\n  };\n};\n"
+      },
+      "id": "RnCmpJs01",
+      "position": {
+        "x": 1661.3992283374662,
+        "y": 1780
       },
       "fpEnabled": true
     },
@@ -417,6 +491,70 @@
       "fpEnabled": true
     },
     {
+      "name": "Save File - Check Variable - test_mode 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.userVariables.library.test_mode}}}",
+        "value": "true"
+      },
+      "id": "Dbg5NwFmK",
+      "position": {
+        "x": 1806.4128342159873,
+        "y": 1540.1731267495834
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "ℹ️ test_mode = true saves the transcoded file as a new file in output_dir_done and keeps the source (for testing).  It's a library variable.  Unset or false = replace the original media file in the library (default)",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "cM9dBg1nf",
+      "position": {
+        "x": 1987.6410287345621,
+        "y": 1466.8213945172834
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - Replace Original File ⏳",
+      "sourceRepo": "Community",
+      "pluginName": "replaceOriginalFile",
+      "version": "1.0.0",
+      "id": "RpL8orGnl",
+      "position": {
+        "x": 1938.2718412095324,
+        "y": 1625.4831207384756
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - Can't Replace Original File! 🚨🚨",
+      "sourceRepo": "Community",
+      "pluginName": "failFlow",
+      "version": "1.0.0",
+      "id": "RpLf41lX2",
+      "position": {
+        "x": 2081.3271984123753,
+        "y": 1679.2381742035718
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - Replace Original File Complete ✅",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "RpLdN3cmt",
+      "position": {
+        "x": 1938.8123471293845,
+        "y": 1721.6483210472935
+      },
+      "fpEnabled": true
+    },
+    {
       "name": "Save File - File is too low bitrate to encode video ℹ️ℹ️ℹ️",
       "sourceRepo": "Community",
       "pluginName": "comment",
@@ -736,6 +874,13 @@
     }
   ],
   "flowEdges": [
+    {
+      "source": "DelTrkPly1",
+      "sourceHandle": "1",
+      "target": "ko1ZB0KWL",
+      "targetHandle": null,
+      "id": "eDelTrk2Done"
+    },
     {
       "source": "KM3GG8qTW",
       "sourceHandle": "1",
@@ -1096,9 +1241,79 @@
     {
       "source": "VfgJdUHHI",
       "sourceHandle": "2",
-      "target": "nSj2dyRzi",
+      "target": "RnCmpChk1",
       "targetHandle": null,
       "id": "bRVb4ISKC"
+    },
+    {
+      "source": "RnCmpChk1",
+      "sourceHandle": "1",
+      "target": "RnCmpChk2",
+      "targetHandle": null,
+      "id": "RnCmpE1"
+    },
+    {
+      "source": "RnCmpChk1",
+      "sourceHandle": "2",
+      "target": "Dbg5NwFmK",
+      "targetHandle": null,
+      "id": "RnCmpE2"
+    },
+    {
+      "source": "RnCmpChk2",
+      "sourceHandle": "1",
+      "target": "RnCmpJs01",
+      "targetHandle": null,
+      "id": "RnCmpE3"
+    },
+    {
+      "source": "RnCmpChk2",
+      "sourceHandle": "2",
+      "target": "Dbg5NwFmK",
+      "targetHandle": null,
+      "id": "RnCmpE4"
+    },
+    {
+      "source": "RnCmpJs01",
+      "sourceHandle": "1",
+      "target": "Dbg5NwFmK",
+      "targetHandle": null,
+      "id": "RnCmpE5"
+    },
+    {
+      "source": "Dbg5NwFmK",
+      "sourceHandle": "1",
+      "target": "nSj2dyRzi",
+      "targetHandle": null,
+      "id": "eDbg2MvDn"
+    },
+    {
+      "source": "Dbg5NwFmK",
+      "sourceHandle": "2",
+      "target": "RpL8orGnl",
+      "targetHandle": null,
+      "id": "eDbg2Rpl0"
+    },
+    {
+      "source": "RpL8orGnl",
+      "sourceHandle": "1",
+      "target": "RpLdN3cmt",
+      "targetHandle": null,
+      "id": "eRpl2Cmt1"
+    },
+    {
+      "source": "RpL8orGnl",
+      "sourceHandle": "err1",
+      "target": "RpLf41lX2",
+      "targetHandle": null,
+      "id": "eRpl2Fail"
+    },
+    {
+      "source": "RpLdN3cmt",
+      "sourceHandle": "1",
+      "target": "DelTrkPly1",
+      "targetHandle": null,
+      "id": "eCmt2Done"
     },
     {
       "source": "nSj2dyRzi",

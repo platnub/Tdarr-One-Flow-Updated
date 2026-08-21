@@ -1027,6 +1027,33 @@
       "fpEnabled": true
     },
     {
+      "name": "Sort & Tag - Skip Already-Compressed Input 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n  const path = require(\"path\");\n\n  // Guard: skip files already produced by rename_group_compressed. Those files\n  // carry a trailing \"-compressed\" release-group token (see plugins/\n  // js_rename_group_compressed.js). Re-running the whole flow on them would just\n  // re-encode an already-compressed file, so end the flow right here — gracefully:\n  // no transcode, no goToFlow to Flow 2, and NO failFlow (this is an intentional\n  // skip, not an error). This branch simply terminates with no further edge.\n  const currentPath = String(args.inputFileObj._id || args.inputFileObj.file || \"\");\n  const ext = path.extname(currentPath);\n  const baseName = path.basename(currentPath, ext);\n\n  // Mirror js_rename_group_compressed's tokenization exactly: the release-group\n  // tag is the final hyphen-delimited segment of the base name, and only counts\n  // as a group token when it is non-empty and whitespace-free — so a title-\n  // internal hyphen like \"Spider-Man (2019)\" is NOT mistaken for a group\n  // separator (its trailing token \"Man (2019)\" contains whitespace).\n  const lastHyphenIndex = baseName.lastIndexOf(\"-\");\n  const trailingToken = lastHyphenIndex === -1 ? \"\" : baseName.slice(lastHyphenIndex + 1);\n  const hasGroupToken = lastHyphenIndex !== -1 && trailingToken.length > 0 && !/\\s/.test(trailingToken);\n  const alreadyCompressed = hasGroupToken && trailingToken.toLowerCase() === \"compressed\";\n\n  if (alreadyCompressed) {\n    console.log(`skip_already_compressed: \"${baseName}\" ends in -compressed; ending flow without transcoding`);\n  } else {\n    console.log(`skip_already_compressed: \"${baseName}\" not flagged compressed, continuing normally`);\n  }\n\n  return {\n    outputFileObj: args.inputFileObj,\n    // Output 2 = already compressed -> route to the graceful stop node (dead-ends,\n    // so the flow completes without transcoding). Output 1 = normal file ->\n    // continue down the existing Sort & Tag chain unchanged.\n    outputNumber: alreadyCompressed ? 2 : 1,\n    variables: args.variables,\n  };\n};\n"
+      },
+      "id": "SkpCmpChk1",
+      "position": {
+        "x": 180,
+        "y": -1620
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Sort & Tag - Already Compressed, Skip ⏭️",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "SkpCmpEnd1",
+      "position": {
+        "x": 180,
+        "y": -1520
+      },
+      "fpEnabled": true
+    },
+    {
       "name": "Sort & Tag - Check if avi 🔍",
       "sourceRepo": "Community",
       "pluginName": "checkFileExtension",
@@ -1124,6 +1151,158 @@
         "y": 944.8548812068027
       },
       "fpEnabled": true
+    },
+    {
+      "name": "Variables - Video Encoding Customize AV1 (nvenc/qsv/cpu) ℹ️\nSVT-AV1 CPU: -preset 0-13 (higher=faster, INVERTED vs x265). -crf/-cq scale 0-63.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "flav1cmt1",
+      "position": {
+        "x": 2380,
+        "y": -1260
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_nvenc_quality 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_nvenc_quality",
+        "value": "-preset p7"
+      },
+      "id": "flav1nvq1",
+      "position": {
+        "x": 2380,
+        "y": -1120
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_nvenc_main 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_nvenc_main",
+        "value": "-spatial-aq 1 -aq-strength 8"
+      },
+      "id": "flav1nvm1",
+      "position": {
+        "x": 2380,
+        "y": -990
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_nvenc_b-frames 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_nvenc_b-frames",
+        "value": "-bf 4"
+      },
+      "id": "flav1nvb1",
+      "position": {
+        "x": 2380,
+        "y": -860
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_qsv_quality 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_qsv_quality",
+        "value": "-preset slower"
+      },
+      "id": "flav1qsq1",
+      "position": {
+        "x": 2380,
+        "y": -730
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_qsv_main 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_qsv_main",
+        "value": ""
+      },
+      "id": "flav1qsm1",
+      "position": {
+        "x": 2380,
+        "y": -600
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_cpu_quality 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_cpu_quality",
+        "value": "-preset 6"
+      },
+      "id": "flav1cpq1",
+      "position": {
+        "x": 2380,
+        "y": -470
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_av1_cpu_main 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_av1_cpu_main",
+        "value": ""
+      },
+      "id": "flav1cpm1",
+      "position": {
+        "x": 2380,
+        "y": -340
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Variables - Subtitle Disposition ℹ️\nRaw ffmpeg args used to clear the 'default' flag on any subtitle stream still muxed after extraction (e.g. image-based PGS/VOBSUB tracks the SRT extractor can't convert). Only applied when library variable clear_default_subtitle = true.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "flClrCmt1",
+      "position": {
+        "x": 2380,
+        "y": -210
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Input - Set Flow Variable fl_clear_default_subtitle_args 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "fl_clear_default_subtitle_args",
+        "value": "-disposition:s 0"
+      },
+      "id": "flClrSub1",
+      "position": {
+        "x": 2380,
+        "y": -80
+      },
+      "fpEnabled": true
     }
   ],
   "flowEdges": [
@@ -1137,9 +1316,23 @@
     {
       "source": "OO_HK73Ms",
       "sourceHandle": "1",
-      "target": "EOKWqH2pd",
+      "target": "SkpCmpChk1",
       "targetHandle": null,
       "id": "A0uJHeXoz"
+    },
+    {
+      "source": "SkpCmpChk1",
+      "sourceHandle": "1",
+      "target": "EOKWqH2pd",
+      "targetHandle": null,
+      "id": "SkpCmpEdgeC"
+    },
+    {
+      "source": "SkpCmpChk1",
+      "sourceHandle": "2",
+      "target": "SkpCmpEnd1",
+      "targetHandle": null,
+      "id": "SkpCmpEdgeS"
     },
     {
       "source": "GxxhjqFpX",
@@ -1739,7 +1932,7 @@
     {
       "source": "-KmecX3NJ",
       "sourceHandle": "1",
-      "target": "KIvOMF-YR",
+      "target": "flav1cmt1",
       "targetHandle": null,
       "id": "LTSbSkNcb"
     },
@@ -1749,6 +1942,76 @@
       "target": "CtlVjs1RR",
       "targetHandle": null,
       "id": "yTP9k4lbW"
+    },
+    {
+      "source": "flav1cmt1",
+      "sourceHandle": "1",
+      "target": "flav1nvq1",
+      "targetHandle": null,
+      "id": "eav1in000"
+    },
+    {
+      "source": "flav1nvq1",
+      "sourceHandle": "1",
+      "target": "flav1nvm1",
+      "targetHandle": null,
+      "id": "eav1in001"
+    },
+    {
+      "source": "flav1nvm1",
+      "sourceHandle": "1",
+      "target": "flav1nvb1",
+      "targetHandle": null,
+      "id": "eav1in002"
+    },
+    {
+      "source": "flav1nvb1",
+      "sourceHandle": "1",
+      "target": "flav1qsq1",
+      "targetHandle": null,
+      "id": "eav1in003"
+    },
+    {
+      "source": "flav1qsq1",
+      "sourceHandle": "1",
+      "target": "flav1qsm1",
+      "targetHandle": null,
+      "id": "eav1in004"
+    },
+    {
+      "source": "flav1qsm1",
+      "sourceHandle": "1",
+      "target": "flav1cpq1",
+      "targetHandle": null,
+      "id": "eav1in005"
+    },
+    {
+      "source": "flav1cpq1",
+      "sourceHandle": "1",
+      "target": "flav1cpm1",
+      "targetHandle": null,
+      "id": "eav1in006"
+    },
+    {
+      "source": "flav1cpm1",
+      "sourceHandle": "1",
+      "target": "flClrCmt1",
+      "targetHandle": null,
+      "id": "eav1in007"
+    },
+    {
+      "source": "flClrCmt1",
+      "sourceHandle": "1",
+      "target": "flClrSub1",
+      "targetHandle": null,
+      "id": "eClrSbIn1"
+    },
+    {
+      "source": "flClrSub1",
+      "sourceHandle": "1",
+      "target": "KIvOMF-YR",
+      "targetHandle": null,
+      "id": "eClrSbIn2"
     }
   ]
 }

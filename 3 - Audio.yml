@@ -321,30 +321,6 @@
       "fpEnabled": true
     },
     {
-      "name": "Audio - Nothing to process ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "LEWyqEPjw",
-      "position": {
-        "x": 966.4629931788627,
-        "y": 3617.5226423121735
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Audio - Removed all but opus! ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "pUJx60xNJ",
-      "position": {
-        "x": 812.1424528963587,
-        "y": 3618.4830719198508
-      },
-      "fpEnabled": true
-    },
-    {
       "name": "Audio - Can't determine Codec Type - Skipping Audio Encode ⚠️",
       "sourceRepo": "Community",
       "pluginName": "resetFlowError",
@@ -1738,6 +1714,22 @@
       "fpEnabled": true
     },
     {
+      "name": "Audio - Encode Set was_compressed 🎯",
+      "sourceRepo": "Community",
+      "pluginName": "setFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "was_compressed",
+        "value": "true"
+      },
+      "id": "wasCmpAud",
+      "position": {
+        "x": 1300,
+        "y": 3171.158019543686
+      },
+      "fpEnabled": true
+    },
+    {
       "name": "Audio - Ensure Opus Exists 🔍",
       "sourceRepo": "Community",
       "pluginName": "checkAudioCodec",
@@ -1781,22 +1773,6 @@
       "fpEnabled": true
     },
     {
-      "name": "Audio - Remove all Audio but opus ⏳",
-      "sourceRepo": "Community",
-      "pluginName": "runClassicTranscodePlugin",
-      "version": "2.0.0",
-      "inputsDB": {
-        "pluginSourceId": "Community:Tdarr_Plugin_MP01_MichPasCleanSubsAndAudioCodecs",
-        "tag_audio_codecs": "aac,ac3,eac3,dca,dts,flac,mp2,mp3,truehd,vorbis,wav,wma"
-      },
-      "id": "B3TKV7LVq",
-      "position": {
-        "x": 892.8748921187575,
-        "y": 3524.6180596242325
-      },
-      "fpEnabled": true
-    },
-    {
       "name": "Audio - Check is_mkv 🔍",
       "sourceRepo": "Community",
       "pluginName": "checkFileExtension",
@@ -1832,6 +1808,95 @@
       "position": {
         "x": 346.5213721494975,
         "y": 1609.5077674862482
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "ℹ️ User config optional\nVariable default_audio_language sets which language's audio track becomes the default (blank = skip)",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "dLngInf08",
+      "position": {
+        "x": 1750,
+        "y": 1560
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Audio - Encode - Mark Non-Opus Audio Removed 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n  // Folds classic Tdarr_Plugin_MP01_MichPasCleanSubsAndAudioCodecs (\"Remove all Audio but\n  // opus\", B3TKV7LVq) into this opus-encode builder chain instead of a separate remux.\n  // The classic node ran AFTER the encode, so audio track 0 was already opus and never\n  // matched its codec list. Here we run at the START of the encode chain, where track 0\n  // still shows its ORIGINAL codec_name (e.g. aac) in ffmpegCommand.streams -- so we must\n  // skip audioIdx 0 unconditionally (it is the track -c:a:0 is about to encode to opus)\n  // and only remove later audio tracks whose codec_name is in the same fixed list. A\n  // non-first audio track whose codec is NOT in the list (e.g. an already-opus commentary)\n  // survives untouched, exactly as it did before.\n  const removeIfCodec = [\"aac\", \"ac3\", \"eac3\", \"dca\", \"dts\", \"flac\", \"mp2\", \"mp3\", \"truehd\", \"vorbis\", \"wav\", \"wma\"];\n  let audioIdx = 0;\n  (args.variables.ffmpegCommand.streams || []).forEach((stream) => {\n    if (stream.codec_type !== \"audio\") return;\n    if (audioIdx > 0 && removeIfCodec.includes(String(stream.codec_name).toLowerCase())) {\n      // eslint-disable-next-line no-param-reassign\n      stream.removed = true;\n    }\n    audioIdx += 1;\n  });\n\n  return {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1,\n    variables: args.variables,\n  };\n};\n"
+      },
+      "id": "AudRm01",
+      "position": {
+        "x": 300,
+        "y": 1990
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Audio - Default Lang - JS Determine mkvpropedit Args 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n  // Sets the default-audio-track flag IN PLACE via mkvpropedit (applied by the MkvDf03\n  // runCli node) instead of a full ffmpeg remux. Re-implements the ordered-priority\n  // matching from plugins/js_set_default_audio_language.js verbatim (same field used by\n  // the deleted dLngCfn01 node, at an equivalent post-encode/post-strip point in the\n  // flow), but:\n  //   * runs only on the MKV branch, after the existing MKVPropEdit stage, and\n  //   * emits mkvpropedit \"--edit track:aN --set flag-default=0/1\" syntax. mkvpropedit\n  //     track selectors are 1-INDEXED (track:a1 = first audio track), unlike ffmpeg's\n  //     0-indexed \"-disposition:a:N\".\n  //\n  // Assumption (shared with the deleted dLngCfn01 node, not new to this PR):\n  // args.inputFileObj.ffProbeData.streams reflects the post-encode/post-strip track list\n  // by the time this node runs -- i.e. the engine re-probes ffProbeData after\n  // ffmpegCommandExecute/runMkvPropEdit steps rather than serving a cached pre-encode\n  // probe. This node's graph position -- downstream of the same-flow checkAudioCodec node,\n  // which itself depends on post-encode ffProbeData -- is consistent with that holding\n  // true, but it has not been confirmed against a live fixture. The required Level 3\n  // live-import verification should specifically include a file with >1 non-opus audio\n  // track, so a stale-index mismatch here (wrong/nonexistent track marked default after\n  // AudRm01 strips tracks) would be caught rather than just a \"does it run\" smoke test.\n  const targetLanguages = String(args.userVariables.library.default_audio_language || \"\")\n    .split(\",\")\n    .map((lang) => lang.trim().toLowerCase())\n    .filter((lang) => lang !== \"\");\n\n  args.variables.mkvpropedit_default_audio_args = \"\";\n\n  // Blank/unset = skip: no-op, leave existing default flags untouched.\n  if (targetLanguages.length === 0) {\n    console.log(\"default_audio_language is blank, skipping default audio track flag\");\n    return { outputFileObj: args.inputFileObj, outputNumber: 1, variables: args.variables };\n  }\n\n  const streams = (args.inputFileObj.ffProbeData && args.inputFileObj.ffProbeData.streams) || [];\n  const audioStreams = streams.filter((stream) => stream.codec_type === \"audio\");\n\n  const streamLanguage = (stream) =>\n    (stream.tags ? String(stream.tags.language || \"\").trim().toLowerCase() : \"\");\n\n  // Walk the priority list in order; the first language with a matching audio track wins.\n  let matchIndex = -1;\n  for (const targetLanguage of targetLanguages) {\n    matchIndex = audioStreams.findIndex((stream) => streamLanguage(stream) === targetLanguage);\n    if (matchIndex !== -1) {\n      console.log(`Matched default_audio_language \"${targetLanguage}\" at audio track ${matchIndex}`);\n      break;\n    }\n  }\n\n  // No match for any language = no-op: don't clear existing default flags when there's\n  // nothing to set as default.\n  if (matchIndex === -1) {\n    console.log(`No audio track matched default_audio_language \"${targetLanguages.join(\",\")}\", skipping`);\n    return { outputFileObj: args.inputFileObj, outputNumber: 1, variables: args.variables };\n  }\n\n  // Set the matched track default and clear the default flag on every other audio track.\n  args.variables.mkvpropedit_default_audio_args = audioStreams\n    .map((s, i) => `--edit track:a${i + 1} --set flag-default=${i === matchIndex ? 1 : 0}`)\n    .join(\" \");\n  console.log(`mkvpropedit_default_audio_args: ${args.variables.mkvpropedit_default_audio_args}`);\n\n  return { outputFileObj: args.inputFileObj, outputNumber: 1, variables: args.variables };\n};\n"
+      },
+      "id": "MkvDf01",
+      "position": {
+        "x": 980,
+        "y": 3860
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Audio - Default Lang - Check mkvpropedit args set 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.variables.mkvpropedit_default_audio_args}}}",
+        "value": ""
+      },
+      "id": "MkvDf02",
+      "position": {
+        "x": 980,
+        "y": 3900
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Audio - Default Lang - Set Default Audio via mkvpropedit ⏳",
+      "sourceRepo": "Community",
+      "pluginName": "runCli",
+      "version": "1.0.0",
+      "inputsDB": {
+        "useCustomCliPath": "false",
+        "userCli": "mkvpropedit",
+        "doesCommandCreateOutputFile": "false",
+        "outputFileBecomesWorkingFile": "false",
+        "cliArguments": "\"{{{args.inputFileObj._id}}}\" {{{args.variables.mkvpropedit_default_audio_args}}}"
+      },
+      "id": "MkvDf03",
+      "position": {
+        "x": 980,
+        "y": 3940
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Audio - Default Lang - Error - Skipping Default Audio Language ⚠️",
+      "sourceRepo": "Community",
+      "pluginName": "resetFlowError",
+      "version": "1.0.0",
+      "id": "MkvDf04",
+      "position": {
+        "x": 1240,
+        "y": 3940
       },
       "fpEnabled": true
     }
@@ -2176,7 +2241,7 @@
     {
       "source": "AVOGHm5kI",
       "sourceHandle": "1",
-      "target": "gdq5cqEJ1",
+      "target": "AudRm01",
       "targetHandle": null,
       "id": "j5acQsMxL"
     },
@@ -2547,9 +2612,16 @@
     {
       "source": "06NkCtYpa",
       "sourceHandle": "1",
-      "target": "LTmW8nMkk",
+      "target": "wasCmpAud",
       "targetHandle": null,
       "id": "21wPDGVm_"
+    },
+    {
+      "source": "wasCmpAud",
+      "sourceHandle": "1",
+      "target": "LTmW8nMkk",
+      "targetHandle": null,
+      "id": "wasCmpAudE"
     },
     {
       "source": "LTmW8nMkk",
@@ -2645,23 +2717,9 @@
     {
       "source": "uVvEH-f46",
       "sourceHandle": "1",
-      "target": "B3TKV7LVq",
+      "target": "J8tZK5YJe",
       "targetHandle": null,
       "id": "o_wPxzy0_"
-    },
-    {
-      "source": "B3TKV7LVq",
-      "sourceHandle": "1",
-      "target": "pUJx60xNJ",
-      "targetHandle": null,
-      "id": "oQ4Cks6rp"
-    },
-    {
-      "source": "B3TKV7LVq",
-      "sourceHandle": "2",
-      "target": "LEWyqEPjw",
-      "targetHandle": null,
-      "id": "Yo0jtTftT"
     },
     {
       "source": "dzcqBzIai",
@@ -2888,20 +2946,6 @@
       "id": "2Fp7GwXZd"
     },
     {
-      "source": "pUJx60xNJ",
-      "sourceHandle": "1",
-      "target": "J8tZK5YJe",
-      "targetHandle": null,
-      "id": "K7qs1XtWl"
-    },
-    {
-      "source": "LEWyqEPjw",
-      "sourceHandle": "1",
-      "target": "J8tZK5YJe",
-      "targetHandle": null,
-      "id": "f6O4tK3sC"
-    },
-    {
       "source": "IgDBEt27L",
       "sourceHandle": "1",
       "target": "J8tZK5YJe",
@@ -2925,7 +2969,7 @@
     {
       "source": "GhMthZgi7",
       "sourceHandle": "1",
-      "target": "RdB4YXh8J",
+      "target": "MkvDf01",
       "targetHandle": null,
       "id": "n3kx3kbyx"
     },
@@ -3049,13 +3093,6 @@
       "id": "C1Q6Zl6bu"
     },
     {
-      "source": "pNuQrkOTp",
-      "sourceHandle": "1",
-      "target": "0SoOMHLNd",
-      "targetHandle": null,
-      "id": "rzM4dgmGJ"
-    },
-    {
       "source": "kXiy_6aLf",
       "sourceHandle": "1",
       "target": "pNuQrkOTp",
@@ -3096,6 +3133,62 @@
       "target": "ie0ITMYKV",
       "targetHandle": null,
       "id": "2HuTIeqvR"
+    },
+    {
+      "source": "pNuQrkOTp",
+      "sourceHandle": "1",
+      "target": "0SoOMHLNd",
+      "targetHandle": null,
+      "id": "edLng01in"
+    },
+    {
+      "source": "AudRm01",
+      "sourceHandle": "1",
+      "target": "gdq5cqEJ1",
+      "targetHandle": null,
+      "id": "eAudRm01g"
+    },
+    {
+      "source": "MkvDf01",
+      "sourceHandle": "1",
+      "target": "MkvDf02",
+      "targetHandle": null,
+      "id": "eMkvDf01a"
+    },
+    {
+      "source": "MkvDf02",
+      "sourceHandle": "1",
+      "target": "RdB4YXh8J",
+      "targetHandle": null,
+      "id": "eMkvDf02sk"
+    },
+    {
+      "source": "MkvDf02",
+      "sourceHandle": "2",
+      "target": "MkvDf03",
+      "targetHandle": null,
+      "id": "eMkvDf02go"
+    },
+    {
+      "source": "MkvDf03",
+      "sourceHandle": "1",
+      "target": "RdB4YXh8J",
+      "targetHandle": null,
+      "id": "eMkvDf03ok"
+    },
+    {
+      "source": "MkvDf03",
+      "sourceHandle": "err1",
+      "target": "MkvDf04",
+      "targetHandle": null,
+      "id": "eMkvDf03er"
+    },
+    {
+      "source": "MkvDf04",
+      "sourceHandle": "1",
+      "target": "RdB4YXh8J",
+      "targetHandle": null,
+      "id": "eMkvDf04go"
     }
   ]
 }

@@ -560,23 +560,6 @@
       "fpEnabled": true
     },
     {
-      "name": "Prep & Clean - Clean Subtitles ⏳",
-      "sourceRepo": "Community",
-      "pluginName": "runClassicTranscodePlugin",
-      "version": "2.0.0",
-      "inputsDB": {
-        "pluginSourceId": "Community:Tdarr_Plugin_MC93_Migz4CleanSubs",
-        "language": "{{{args.userVariables.library.audio_language}}}",
-        "commentary": "true"
-      },
-      "id": "1KJVm_sn5",
-      "position": {
-        "x": 679.4906761667997,
-        "y": 833.6098378569683
-      },
-      "fpEnabled": true
-    },
-    {
       "name": "Prep & Clean - Go back to beginning of flow ➡️",
       "sourceRepo": "Community",
       "pluginName": "goToFlow",
@@ -821,83 +804,6 @@
       "fpEnabled": true
     },
     {
-      "name": "Prep & Clean - Clean Titles Error! Moving on Anyways ⚠️",
-      "sourceRepo": "Community",
-      "pluginName": "resetFlowError",
-      "version": "1.0.0",
-      "id": "vX8lBfgvT",
-      "position": {
-        "x": 1368.1610730523462,
-        "y": 862.994723151749
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Nothing to Process ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "h9hxgqzCE",
-      "position": {
-        "x": 1218.2773721521091,
-        "y": 876.9548868355174
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Titles Cleaned ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "fVVvOGSJL",
-      "position": {
-        "x": 1068.7838658413257,
-        "y": 875.2416252916731
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Clean Titles ⏳",
-      "sourceRepo": "Community",
-      "pluginName": "runClassicTranscodePlugin",
-      "version": "2.0.0",
-      "inputsDB": {
-        "pluginSourceId": "Community:Tdarr_Plugin_MC93_Migz2CleanTitle",
-        "clean_audio": "true",
-        "clean_subtitles": "true"
-      },
-      "id": "U-F59Ok-h",
-      "position": {
-        "x": 1149.6901971975126,
-        "y": 758.723590867744
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Remove Images Error! Moving on anyways ⚠️",
-      "sourceRepo": "Community",
-      "pluginName": "resetFlowError",
-      "version": "1.0.0",
-      "id": "kGN6CEz31",
-      "position": {
-        "x": 1300.9399095305284,
-        "y": 655.3765506987852
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Nothing to Process ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "87IxgdnN7",
-      "position": {
-        "x": 1149.2159692092464,
-        "y": 668.5924551492088
-      },
-      "fpEnabled": true
-    },
-    {
       "name": "Prep & Clean - Couldn't extract subtitles! ⚠️",
       "sourceRepo": "Community",
       "pluginName": "resetFlowError",
@@ -906,30 +812,6 @@
       "position": {
         "x": 982.8728494078152,
         "y": 188.170214075775
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Reorder Streams - No action was taken ⚠️",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "QkJm4Dbb4",
-      "position": {
-        "x": 766.3486651922797,
-        "y": -163.77042658424043
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Reorder Streams Done ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "vGg9Q1mTC",
-      "position": {
-        "x": 606.1379100259819,
-        "y": -150.07838404787657
       },
       "fpEnabled": true
     },
@@ -1038,32 +920,14 @@
       "fpEnabled": true
     },
     {
-      "name": "Move Extracted Subs out of Cache ⏳",
+      "name": "ℹ️ Extracted subtitles follow the video file.  test_mode = true moves them under output_dir_done/<library-relative subpath>/ — the same relative path as the video — so they stay next to it (not the flat root).  output_dir_done is REQUIRED when test_mode = true; the flow fails fast at the start (2 - Prep) if it is missing.  Default (unset/false) moves them to the original file folder, where the final video will be saved.",
       "sourceRepo": "Community",
-      "pluginName": "copyMoveFolderContent",
+      "pluginName": "comment",
       "version": "1.0.0",
-      "inputsDB": {
-        "sourceDirectory": "workingDirectory",
-        "copyOrMove": "move",
-        "outputDirectory": "{{{args.userVariables.library.output_dir_done}}}",
-        "fileExtensions": "srt,ass,sub,idx"
-      },
-      "id": "nAm2l1adq",
+      "id": "DbgSubCmt",
       "position": {
-        "x": 728.5352788943445,
-        "y": 320.04388320488283
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Couldn't move subtitles! ⚠️",
-      "sourceRepo": "Community",
-      "pluginName": "resetFlowError",
-      "version": "1.0.0",
-      "id": "QEf_j7ip0",
-      "position": {
-        "x": 844.2482745550799,
-        "y": 447.9895543775325
+        "x": 432.8123471938264,
+        "y": 194.62381273918376
       },
       "fpEnabled": true
     },
@@ -1104,33 +968,6 @@
       "fpEnabled": true
     },
     {
-      "name": "Prep & Clean - Reorder Streams ⏳",
-      "sourceRepo": "Community",
-      "pluginName": "runClassicTranscodePlugin",
-      "version": "2.0.0",
-      "inputsDB": {
-        "pluginSourceId": "Community:Tdarr_Plugin_MC93_Migz6OrderStreams"
-      },
-      "id": "wpTkxtpa6",
-      "position": {
-        "x": 682.5180898705386,
-        "y": -248.37820636991884
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Couldn't Reorder Streams! Moving Forward Anyways ⚠️",
-      "sourceRepo": "Community",
-      "pluginName": "resetFlowError",
-      "version": "1.0.0",
-      "id": "Wx1eKJA9L",
-      "position": {
-        "x": 926.5180898705389,
-        "y": -163.37820636991867
-      },
-      "fpEnabled": true
-    },
-    {
       "name": "Prep & Clean - Check Variable remove_subs 🔍",
       "sourceRepo": "Community",
       "pluginName": "checkFlowVariable",
@@ -1143,33 +980,6 @@
       "position": {
         "x": 1185.161489734479,
         "y": 1740.3025758471233
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Remove Images ⏳",
-      "sourceRepo": "Community",
-      "pluginName": "runClassicTranscodePlugin",
-      "version": "2.0.0",
-      "inputsDB": {
-        "pluginSourceId": "Community:Tdarr_Plugin_MC93_MigzImageRemoval"
-      },
-      "id": "gKEJKrzsJ",
-      "position": {
-        "x": 1070.083877296706,
-        "y": 581.3363068985333
-      },
-      "fpEnabled": true
-    },
-    {
-      "name": "Prep & Clean - Removed Images ✅",
-      "sourceRepo": "Community",
-      "pluginName": "comment",
-      "version": "1.0.0",
-      "id": "cHhqlSpU1",
-      "position": {
-        "x": 999.0119250121107,
-        "y": 667.9516194183444
       },
       "fpEnabled": true
     },
@@ -1218,11 +1028,11 @@
       "pluginName": "ffmpegCommandRorderStreams",
       "version": "1.0.0",
       "inputsDB": {
-        "languages": "{{{args.variables.user.config_reorder_streams_lang}}}",
-        "codecs": "{{{args.variables.user.config_reorder_streams_codec}}}",
-        "processOrder": "{{{args.variables.user.config_reorder_streams_order}}}",
-        "channels": "{{{args.variables.user.config_reorder_streams_channels}}}",
-        "streamTypes": "{{{args.variables.user.config_reorder_streams_type}}}"
+        "languages": "{{{args.variables.user.fl_reorder_streams_lang}}}",
+        "codecs": "{{{args.variables.user.fl_reorder_streams_codec}}}",
+        "processOrder": "{{{args.variables.user.fl_reorder_streams_order}}}",
+        "channels": "{{{args.variables.user.fl_reorder_streams_channels}}}",
+        "streamTypes": "{{{args.variables.user.fl_reorder_streams_type}}}"
       },
       "id": "om49ib9os",
       "position": {
@@ -1341,6 +1151,284 @@
         "y": 2692.209447810073
       },
       "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Normal Path, Always Extract Subs to .srt ℹ️",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "AlwSubCmt",
+      "position": {
+        "x": 1684.72,
+        "y": 30.7
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Try to Extract Subs to SRT & Remove⏳",
+      "sourceRepo": "Community",
+      "pluginName": "runClassicTranscodePlugin",
+      "version": "2.0.0",
+      "inputsDB": {
+        "pluginSourceId": "Community:Tdarr_Plugin_rr01_drpeppershaker_extract_subs_to_SRT",
+        "remove_subs": "yes"
+      },
+      "id": "AlwSubExt",
+      "position": {
+        "x": 1569.11,
+        "y": 129.22
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Subtitles were Extracted ✅",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "AlwSubOk1",
+      "position": {
+        "x": 1428.91,
+        "y": 240.23
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - No action was taken ⚠️",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "AlwSubNo1",
+      "position": {
+        "x": 1593.54,
+        "y": 239.77
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Couldn't extract subtitles! ⚠️",
+      "sourceRepo": "Community",
+      "pluginName": "resetFlowError",
+      "version": "1.0.0",
+      "id": "AlwSubEr1",
+      "position": {
+        "x": 1682.87,
+        "y": 188.17
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "ℹ️ Extracted subtitles follow the video file.  test_mode = true moves them under output_dir_done/<library-relative subpath>/ — the same relative path as the video — so they stay next to it (not the flat root).  output_dir_done is REQUIRED when test_mode = true; the flow fails fast at the start (2 - Prep) if it is missing.  Default (unset/false) moves them to the original file folder, where the final video will be saved.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "AlwSubTmI",
+      "position": {
+        "x": 1132.81,
+        "y": 194.62
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Moved Extrated Subtitles ✅",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "AlwSubOk2",
+      "position": {
+        "x": 1428.84,
+        "y": 401.78
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Don't have a way to check if subtitles actually exist ⚠️",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "AlwSubWrn",
+      "position": {
+        "x": 1429.23,
+        "y": 492.19
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "ℹ️ You can use a library variable clear_default_subtitle to clear the 'default' flag on any subtitle stream still muxed after extraction (e.g. PGS/VOBSUB tracks that can't be converted to SRT).\nclear_default_subtitle true. Runs -disposition:s 0.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "ClrSubCmt",
+      "position": {
+        "x": 950,
+        "y": 1700
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Check Variable clear_default_subtitle 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.userVariables.library.clear_default_subtitle}}}",
+        "value": "true"
+      },
+      "id": "ClrSubChk",
+      "position": {
+        "x": 1050,
+        "y": 1870
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Clear Default Subtitle Disposition 📼",
+      "sourceRepo": "Community",
+      "pluginName": "ffmpegCommandCustomArguments",
+      "version": "1.0.0",
+      "inputsDB": {
+        "inputArguments": "",
+        "outputArguments": "{{{args.variables.user.fl_clear_default_subtitle_args}}}"
+      },
+      "id": "ClrSubCmd",
+      "position": {
+        "x": 950,
+        "y": 1900
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Guard: is test_mode = true? 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.userVariables.library.test_mode}}}",
+        "value": "true"
+      },
+      "id": "OddChkTm01",
+      "position": {
+        "x": 250,
+        "y": -660
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Guard: is output_dir_done set? 🔍",
+      "sourceRepo": "Community",
+      "pluginName": "checkFlowVariable",
+      "version": "1.0.0",
+      "inputsDB": {
+        "variable": "{{{args.userVariables.library.output_dir_done}}}",
+        "value": ""
+      },
+      "id": "OddChkDir1",
+      "position": {
+        "x": 250,
+        "y": -560
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "🚨 test_mode = true but output_dir_done is empty/unset. output_dir_done is REQUIRED when test_mode = true — the transcoded file and its extracted subtitle sidecars are saved there. Set it in the library variables. Failing the flow now, before transcoding.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "OddFailMsg",
+      "position": {
+        "x": 60,
+        "y": -460
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Missing output_dir_done in test_mode - Failing Flow 🚨",
+      "sourceRepo": "Community",
+      "pluginName": "failFlow",
+      "version": "1.0.0",
+      "id": "OddFailFl1",
+      "position": {
+        "x": 60,
+        "y": -360
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Remove Image Format Streams 📼",
+      "sourceRepo": "Community",
+      "pluginName": "ffmpegCommandRemoveStreamByProperty",
+      "version": "1.0.0",
+      "inputsDB": {
+        "codecType": "any",
+        "propertyToCheck": "codec_name",
+        "valuesToRemove": "mjpeg,png,gif",
+        "condition": "equals"
+      },
+      "id": "ImgRm01",
+      "position": {
+        "x": 1300,
+        "y": 1147
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - JS Determine Clean Title Args 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n  // Replicates classic Tdarr_Plugin_MC93_Migz2CleanTitle (clean_audio=true,\n  // clean_subtitles=true, clean_comments=false -- matching the deleted U-F59Ok-h node's\n  // inputsDB) folded into the ffmpegCommand builder chain instead of a standalone remux.\n  //\n  // Per-stream indices are computed over the CURRENT non-removed stream list\n  // (args.variables.ffmpegCommand.streams after reorder + image removal), so the emitted\n  // -metadata:s:<type>:<n> targets line up with the real OUTPUT stream indices. Reusing the\n  // raw ffprobe indices would clear titles on the wrong output stream once ImgRm01 has\n  // marked an image/video stream removed.\n  //\n  // The whole computation is wrapped in try/catch: this node now runs inside the shared\n  // ffmpegCommand builder chain (no dedicated resetFlowError rescue like the deleted\n  // classic U-F59Ok-h node had), so an unexpected stream/metadata shape here must degrade\n  // to \"leave titles unchanged\" rather than fail the entire remux via the retry cascade.\n  try {\n    const streams = (args.variables.ffmpegCommand.streams || []).filter((s) => !s.removed);\n    const byType = { video: [], audio: [], subtitle: [] };\n    streams.forEach((s) => {\n      if (byType[s.codec_type]) byType[s.codec_type].push(s);\n    });\n\n    const hasTitle = (s) => s && s.tags\n      && typeof s.tags.title !== \"undefined\"\n      && s.tags.title !== \"\"\n      && s.tags.title !== '\"\"';\n    // Classic only treats a title with more than 3 \".\" characters as junk metadata for\n    // audio/subtitle streams (custom_title_matching was never configured on U-F59Ok-h).\n    const junkTitle = (s) => hasTitle(s) && (String(s.tags.title).split(\".\").length - 1) > 3;\n\n    // Build the argument list as clean tokens joined by single spaces (no leading/trailing/\n    // double spaces) so ffmpegCommandCustomArguments' outputArguments.split(\" \") yields no\n    // empty argv entries, and an all-empty result stays a genuine no-op.\n    const parts = [];\n\n    // Overall container title: classic clears file.meta.Title whenever it is set.\n    // args.inputFileObj mirrors the classic `file` object, so meta.Title is the primary\n    // source; fall back to ffProbeData.format.tags.title when meta is unavailable.\n    const meta = args.inputFileObj.meta || {};\n    const fmt = (args.inputFileObj.ffProbeData && args.inputFileObj.ffProbeData.format) || {};\n    const fmtTitle = fmt.tags ? fmt.tags.title : undefined;\n    const notEmpty = (v) => typeof v !== \"undefined\" && v !== \"\" && v !== '\"\"';\n    const overallTitleSet = notEmpty(meta.Title) || notEmpty(fmtTitle);\n    if (overallTitleSet) parts.push(\"-metadata\", \"title=\");\n\n    // Video stream titles: classic clears unconditionally when a title is present.\n    byType.video.forEach((s, i) => {\n      if (hasTitle(s)) parts.push(`-metadata:s:v:${i}`, \"title=\");\n    });\n    // Audio + subtitle stream titles: classic only clears \"junk\" (>3 dot) titles.\n    byType.audio.forEach((s, i) => {\n      if (junkTitle(s)) parts.push(`-metadata:s:a:${i}`, \"title=\");\n    });\n    byType.subtitle.forEach((s, i) => {\n      if (junkTitle(s)) parts.push(`-metadata:s:s:${i}`, \"title=\");\n    });\n\n    args.variables.clean_title_args = parts.join(\" \");\n    console.log(`clean_title_args: ${args.variables.clean_title_args}`);\n  } catch (err) {\n    // Never let a title-cleaning edge case fail the whole remux/retry chain -- fall back\n    // to \"leave titles as-is\", matching the old classic node's resetFlowError behavior.\n    console.log(`CTitle01 failed, leaving titles unchanged: ${err.message}`);\n    args.variables.clean_title_args = \"\";\n  }\n\n  return {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1,\n    variables: args.variables,\n  };\n};\n"
+      },
+      "id": "CTitle01",
+      "position": {
+        "x": 1300,
+        "y": 1225
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Set Clean Title Args 📼",
+      "sourceRepo": "Community",
+      "pluginName": "ffmpegCommandCustomArguments",
+      "version": "1.0.0",
+      "inputsDB": {
+        "outputArguments": "{{{args.variables.clean_title_args}}}"
+      },
+      "id": "CTitle02",
+      "position": {
+        "x": 1300,
+        "y": 1257
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Move Extracted Subs to Destination 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n\n  const fs = require(\"fs\");\n  const path = require(\"path\");\n\n  // The classic subtitle extractor (Tdarr_Plugin_rr01_drpeppershaker_extract_subs_to_SRT,\n  // run via runClassicTranscodePlugin) derives each .srt output path from\n  // otherArguments.originalLibraryFile.file — the ORIGINAL library file, NOT the\n  // flow's working/cache copy. So the extracted sidecars land next to the original\n  // video, sharing its base name. originalLibraryFile._id is that same path and is\n  // the exact field js_rename_group_compressed reads, so the two plugins agree on\n  // the folder.\n  const originalId = String(args.originalLibraryFile._id || \"\");\n  const sourceDir = path.dirname(originalId);\n\n  // The extractor names each sidecar after the ORIGINAL file's base name (stem):\n  // e.g. \"Movie (2019)-RARBG.mkv\" -> \"Movie (2019)-RARBG.en.srt\". Other videos'\n  // sidecars can share this folder, so we only move files whose name starts with\n  // this video's stem + \".\" — matched case-sensitively, since the extractor\n  // generates them from the exact original name.\n  const originalBase = path.basename(originalId);\n  const originalStem = originalBase.slice(0, originalBase.length - path.extname(originalBase).length);\n\n  const testMode = String(args.userVariables.library.test_mode || \"\").trim().toLowerCase() === \"true\";\n  const outputDirDone = testMode\n    ? String(args.userVariables.library.output_dir_done || \"\").trim()\n    : \"\";\n\n  const result = {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1, // Continue the workflow\n    variables: args.variables, // Pass the updated variables\n  };\n\n  // Defense-in-depth backstop: the flow's early gate (2 - Prep.yml) should already\n  // have failed the flow fast, before transcoding, when test_mode is on but\n  // output_dir_done is empty. If that gate was somehow bypassed we refuse to\n  // silently continue — there is no provable destination for the sidecars, so we\n  // surface the misconfiguration loudly (thrown, so it propagates as a real flow\n  // failure) instead of misplacing the extracted subtitles.\n  if (testMode && !outputDirDone) {\n    throw new Error(\n      \"move_extracted_subs: test_mode is enabled but output_dir_done is empty/unset; \"\n      + \"cannot determine where to place the extracted subtitle sidecars. \"\n      + \"Set the output_dir_done library variable (the flow's early gate in 2 - Prep should \"\n      + \"catch this before transcoding).\"\n    );\n  }\n\n  // Destination = the video's FINAL folder, derived the SAME provable way Tdarr's\n  // moveToDirectory (keepRelativePath, node nSj2dyRzi) places the video and\n  // js_rename_group_compressed re-derives the sidecar folder:\n  //   test_mode -> output_dir_done + the ORIGINAL file's library-relative subpath.\n  //   default   -> the original file's own folder (the in-place final location) —\n  //                which is ALSO where the extractor already wrote the sidecars, so\n  //                this branch is a no-op: the subs already landed at their\n  //                destination and there is nothing to move.\n  let destDir;\n  if (testMode) {\n    const libFolder = String(args.librarySettings.folder || \"\");\n    const relStem = originalId.startsWith(libFolder) ? originalId.slice(libFolder.length) : originalId;\n    // Drop the file name; an empty subStem (video directly in the library root)\n    // yields path.join(outputDirDone, \"\") === outputDirDone, so no special-casing.\n    const subStem = relStem.split(\"/\").slice(0, -1).join(\"/\");\n    destDir = path.join(outputDirDone, subStem);\n  } else {\n    destDir = sourceDir;\n  }\n\n  // Nothing to do when the extractor already wrote the sidecars to the destination\n  // (the default in-place case). This is the whole point: extraction lands the subs\n  // in their final folder, so no separate move step is needed.\n  if (path.resolve(sourceDir) === path.resolve(destDir)) {\n    console.log(`move_extracted_subs: sidecars already at destination \"${destDir}\", nothing to move`);\n    return result;\n  }\n\n  const SUBTITLE_EXTS = [\"srt\", \"ass\", \"sub\", \"idx\"];\n\n  let entries;\n  try {\n    // readdirSync throws ENOENT if the source folder doesn't exist (e.g. no\n    // subtitles were extracted for this file). Treat that as \"nothing to move\".\n    entries = fs.readdirSync(sourceDir);\n  } catch (err) {\n    if (err && err.code === \"ENOENT\") {\n      console.log(`move_extracted_subs: no source directory \"${sourceDir}\", nothing to move (${err.message})`);\n    } else {\n      console.log(`move_extracted_subs: WARNING could not read source directory \"${sourceDir}\": ${err.message}`);\n    }\n    return result;\n  }\n\n  let destEnsured = false;\n  for (const entry of entries) {\n    // Extension matching is case-insensitive; the original suffix casing is kept.\n    const entryExt = path.extname(entry).slice(1).toLowerCase();\n    if (!SUBTITLE_EXTS.includes(entryExt)) continue;\n\n    // Only move sidecars belonging to THIS video (stem match, case-sensitive), so\n    // subtitles for other videos sharing the folder are left untouched. The \".\"\n    // separator prevents near-misses like \"<stem>-extra.en.srt\" from matching.\n    if (originalStem && !entry.startsWith(originalStem + \".\")) continue;\n\n    const oldPath = path.join(sourceDir, entry);\n    const newPath = path.join(destDir, entry);\n    if (path.resolve(oldPath) === path.resolve(newPath)) continue;\n\n    try {\n      if (fs.existsSync(newPath)) {\n        // Guard against clobbering a sidecar already present at the destination.\n        console.log(`move_extracted_subs: target \"${newPath}\" already exists, skipping to avoid overwrite`);\n        continue;\n      }\n      if (!destEnsured) {\n        fs.mkdirSync(destDir, { recursive: true });\n        destEnsured = true;\n      }\n      try {\n        fs.renameSync(oldPath, newPath);\n      } catch (err) {\n        // output_dir_done is frequently a different filesystem/mount than the\n        // source library, so a plain rename fails with EXDEV. Fall back to a\n        // copy-then-delete, mirroring what copyMoveFolderContent does.\n        if (err && err.code === \"EXDEV\") {\n          fs.copyFileSync(oldPath, newPath);\n          fs.unlinkSync(oldPath);\n        } else {\n          throw err;\n        }\n      }\n      console.log(`move_extracted_subs: moved \"${oldPath}\" -> \"${newPath}\"`);\n    } catch (err) {\n      // One bad sidecar shouldn't block the rest or fail the flow.\n      console.log(`move_extracted_subs: WARNING failed to move \"${oldPath}\" -> \"${newPath}\": ${err.message}`);\n    }\n  }\n\n  return result;\n};\n"
+      },
+      "id": "AlwSubMvJs",
+      "position": {
+        "x": 1290.41,
+        "y": 251.83
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Prep & Clean - Move Extracted Subs to Destination 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n\n  const fs = require(\"fs\");\n  const path = require(\"path\");\n\n  // The classic subtitle extractor (Tdarr_Plugin_rr01_drpeppershaker_extract_subs_to_SRT,\n  // run via runClassicTranscodePlugin) derives each .srt output path from\n  // otherArguments.originalLibraryFile.file — the ORIGINAL library file, NOT the\n  // flow's working/cache copy. So the extracted sidecars land next to the original\n  // video, sharing its base name. originalLibraryFile._id is that same path and is\n  // the exact field js_rename_group_compressed reads, so the two plugins agree on\n  // the folder.\n  const originalId = String(args.originalLibraryFile._id || \"\");\n  const sourceDir = path.dirname(originalId);\n\n  // The extractor names each sidecar after the ORIGINAL file's base name (stem):\n  // e.g. \"Movie (2019)-RARBG.mkv\" -> \"Movie (2019)-RARBG.en.srt\". Other videos'\n  // sidecars can share this folder, so we only move files whose name starts with\n  // this video's stem + \".\" — matched case-sensitively, since the extractor\n  // generates them from the exact original name.\n  const originalBase = path.basename(originalId);\n  const originalStem = originalBase.slice(0, originalBase.length - path.extname(originalBase).length);\n\n  const testMode = String(args.userVariables.library.test_mode || \"\").trim().toLowerCase() === \"true\";\n  const outputDirDone = testMode\n    ? String(args.userVariables.library.output_dir_done || \"\").trim()\n    : \"\";\n\n  const result = {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1, // Continue the workflow\n    variables: args.variables, // Pass the updated variables\n  };\n\n  // Defense-in-depth backstop: the flow's early gate (2 - Prep.yml) should already\n  // have failed the flow fast, before transcoding, when test_mode is on but\n  // output_dir_done is empty. If that gate was somehow bypassed we refuse to\n  // silently continue — there is no provable destination for the sidecars, so we\n  // surface the misconfiguration loudly (thrown, so it propagates as a real flow\n  // failure) instead of misplacing the extracted subtitles.\n  if (testMode && !outputDirDone) {\n    throw new Error(\n      \"move_extracted_subs: test_mode is enabled but output_dir_done is empty/unset; \"\n      + \"cannot determine where to place the extracted subtitle sidecars. \"\n      + \"Set the output_dir_done library variable (the flow's early gate in 2 - Prep should \"\n      + \"catch this before transcoding).\"\n    );\n  }\n\n  // Destination = the video's FINAL folder, derived the SAME provable way Tdarr's\n  // moveToDirectory (keepRelativePath, node nSj2dyRzi) places the video and\n  // js_rename_group_compressed re-derives the sidecar folder:\n  //   test_mode -> output_dir_done + the ORIGINAL file's library-relative subpath.\n  //   default   -> the original file's own folder (the in-place final location) —\n  //                which is ALSO where the extractor already wrote the sidecars, so\n  //                this branch is a no-op: the subs already landed at their\n  //                destination and there is nothing to move.\n  let destDir;\n  if (testMode) {\n    const libFolder = String(args.librarySettings.folder || \"\");\n    const relStem = originalId.startsWith(libFolder) ? originalId.slice(libFolder.length) : originalId;\n    // Drop the file name; an empty subStem (video directly in the library root)\n    // yields path.join(outputDirDone, \"\") === outputDirDone, so no special-casing.\n    const subStem = relStem.split(\"/\").slice(0, -1).join(\"/\");\n    destDir = path.join(outputDirDone, subStem);\n  } else {\n    destDir = sourceDir;\n  }\n\n  // Nothing to do when the extractor already wrote the sidecars to the destination\n  // (the default in-place case). This is the whole point: extraction lands the subs\n  // in their final folder, so no separate move step is needed.\n  if (path.resolve(sourceDir) === path.resolve(destDir)) {\n    console.log(`move_extracted_subs: sidecars already at destination \"${destDir}\", nothing to move`);\n    return result;\n  }\n\n  const SUBTITLE_EXTS = [\"srt\", \"ass\", \"sub\", \"idx\"];\n\n  let entries;\n  try {\n    // readdirSync throws ENOENT if the source folder doesn't exist (e.g. no\n    // subtitles were extracted for this file). Treat that as \"nothing to move\".\n    entries = fs.readdirSync(sourceDir);\n  } catch (err) {\n    if (err && err.code === \"ENOENT\") {\n      console.log(`move_extracted_subs: no source directory \"${sourceDir}\", nothing to move (${err.message})`);\n    } else {\n      console.log(`move_extracted_subs: WARNING could not read source directory \"${sourceDir}\": ${err.message}`);\n    }\n    return result;\n  }\n\n  let destEnsured = false;\n  for (const entry of entries) {\n    // Extension matching is case-insensitive; the original suffix casing is kept.\n    const entryExt = path.extname(entry).slice(1).toLowerCase();\n    if (!SUBTITLE_EXTS.includes(entryExt)) continue;\n\n    // Only move sidecars belonging to THIS video (stem match, case-sensitive), so\n    // subtitles for other videos sharing the folder are left untouched. The \".\"\n    // separator prevents near-misses like \"<stem>-extra.en.srt\" from matching.\n    if (originalStem && !entry.startsWith(originalStem + \".\")) continue;\n\n    const oldPath = path.join(sourceDir, entry);\n    const newPath = path.join(destDir, entry);\n    if (path.resolve(oldPath) === path.resolve(newPath)) continue;\n\n    try {\n      if (fs.existsSync(newPath)) {\n        // Guard against clobbering a sidecar already present at the destination.\n        console.log(`move_extracted_subs: target \"${newPath}\" already exists, skipping to avoid overwrite`);\n        continue;\n      }\n      if (!destEnsured) {\n        fs.mkdirSync(destDir, { recursive: true });\n        destEnsured = true;\n      }\n      try {\n        fs.renameSync(oldPath, newPath);\n      } catch (err) {\n        // output_dir_done is frequently a different filesystem/mount than the\n        // source library, so a plain rename fails with EXDEV. Fall back to a\n        // copy-then-delete, mirroring what copyMoveFolderContent does.\n        if (err && err.code === \"EXDEV\") {\n          fs.copyFileSync(oldPath, newPath);\n          fs.unlinkSync(oldPath);\n        } else {\n          throw err;\n        }\n      }\n      console.log(`move_extracted_subs: moved \"${oldPath}\" -> \"${newPath}\"`);\n    } catch (err) {\n      // One bad sidecar shouldn't block the rest or fail the flow.\n      console.log(`move_extracted_subs: WARNING failed to move \"${oldPath}\" -> \"${newPath}\": ${err.message}`);\n    }\n  }\n\n  return result;\n};\n"
+      },
+      "id": "DbgSubMvJs",
+      "position": {
+        "x": 590.4127384219561,
+        "y": 251.83274192837465
+      },
+      "fpEnabled": true
     }
   ],
   "flowEdges": [
@@ -1366,74 +1454,11 @@
       "id": "ViMvv0lg5"
     },
     {
-      "source": "YSy_qAvCn",
-      "sourceHandle": "1",
-      "target": "nAm2l1adq",
-      "targetHandle": null,
-      "id": "MJMKFuwyF"
-    },
-    {
-      "source": "nAm2l1adq",
-      "sourceHandle": "err1",
-      "target": "QEf_j7ip0",
-      "targetHandle": null,
-      "id": "1O4RGPptg"
-    },
-    {
-      "source": "nAm2l1adq",
-      "sourceHandle": "1",
-      "target": "CAY3YSQvk",
-      "targetHandle": null,
-      "id": "cCy4Gg-Xd"
-    },
-    {
       "source": "CAY3YSQvk",
       "sourceHandle": "1",
       "target": "Rs84-OZZF",
       "targetHandle": null,
       "id": "Od3m6_gV8"
-    },
-    {
-      "source": "wpTkxtpa6",
-      "sourceHandle": "1",
-      "target": "vGg9Q1mTC",
-      "targetHandle": null,
-      "id": "RFCQtAUiu"
-    },
-    {
-      "source": "wpTkxtpa6",
-      "sourceHandle": "2",
-      "target": "QkJm4Dbb4",
-      "targetHandle": null,
-      "id": "GUWyUNnHN"
-    },
-    {
-      "source": "vGg9Q1mTC",
-      "sourceHandle": "1",
-      "target": "4HcUvOUMU",
-      "targetHandle": null,
-      "id": "Ugs9JWYHF"
-    },
-    {
-      "source": "QkJm4Dbb4",
-      "sourceHandle": "1",
-      "target": "4HcUvOUMU",
-      "targetHandle": null,
-      "id": "N077ada9x"
-    },
-    {
-      "source": "wpTkxtpa6",
-      "sourceHandle": "err1",
-      "target": "Wx1eKJA9L",
-      "targetHandle": null,
-      "id": "k912oMOPM"
-    },
-    {
-      "source": "Wx1eKJA9L",
-      "sourceHandle": "1",
-      "target": "4HcUvOUMU",
-      "targetHandle": null,
-      "id": "DIHgFCkcd"
     },
     {
       "source": "4HcUvOUMU",
@@ -1452,86 +1477,16 @@
     {
       "source": "OAa5M6tSO",
       "sourceHandle": "1",
-      "target": "gKEJKrzsJ",
+      "target": "_d_3OOKXy",
       "targetHandle": null,
       "id": "EzmIGuGWu"
     },
     {
-      "source": "QEf_j7ip0",
-      "sourceHandle": "1",
-      "target": "gKEJKrzsJ",
-      "targetHandle": null,
-      "id": "-afke5nqW"
-    },
-    {
       "source": "Rs84-OZZF",
       "sourceHandle": "1",
-      "target": "gKEJKrzsJ",
+      "target": "_d_3OOKXy",
       "targetHandle": null,
       "id": "gGIcjPgIW"
-    },
-    {
-      "source": "gKEJKrzsJ",
-      "sourceHandle": "1",
-      "target": "cHhqlSpU1",
-      "targetHandle": null,
-      "id": "LImxMCsAH"
-    },
-    {
-      "source": "gKEJKrzsJ",
-      "sourceHandle": "2",
-      "target": "87IxgdnN7",
-      "targetHandle": null,
-      "id": "seNt4yPzN"
-    },
-    {
-      "source": "gKEJKrzsJ",
-      "sourceHandle": "err1",
-      "target": "kGN6CEz31",
-      "targetHandle": null,
-      "id": "xs80B9Dpw"
-    },
-    {
-      "source": "cHhqlSpU1",
-      "sourceHandle": "1",
-      "target": "U-F59Ok-h",
-      "targetHandle": null,
-      "id": "a_IqDafzK"
-    },
-    {
-      "source": "87IxgdnN7",
-      "sourceHandle": "1",
-      "target": "U-F59Ok-h",
-      "targetHandle": null,
-      "id": "LsvFdlH0u"
-    },
-    {
-      "source": "kGN6CEz31",
-      "sourceHandle": "1",
-      "target": "U-F59Ok-h",
-      "targetHandle": null,
-      "id": "cgf2xVlNg"
-    },
-    {
-      "source": "U-F59Ok-h",
-      "sourceHandle": "1",
-      "target": "fVVvOGSJL",
-      "targetHandle": null,
-      "id": "9AanTBKdJ"
-    },
-    {
-      "source": "U-F59Ok-h",
-      "sourceHandle": "2",
-      "target": "h9hxgqzCE",
-      "targetHandle": null,
-      "id": "oMQuciHFb"
-    },
-    {
-      "source": "U-F59Ok-h",
-      "sourceHandle": "err1",
-      "target": "vX8lBfgvT",
-      "targetHandle": null,
-      "id": "yCjFog4wz"
     },
     {
       "source": "NCG23FkZ3",
@@ -1578,58 +1533,93 @@
     {
       "source": "KmrUSEAlg",
       "sourceHandle": "1",
-      "target": "wpTkxtpa6",
+      "target": "4HcUvOUMU",
       "targetHandle": null,
       "id": "P6LosuM66"
     },
     {
       "source": "EO3A17CY1",
       "sourceHandle": "1",
-      "target": "wpTkxtpa6",
+      "target": "4HcUvOUMU",
       "targetHandle": null,
       "id": "VsKu-cme4"
     },
     {
       "source": "ep7lqdYwl",
       "sourceHandle": "1",
-      "target": "wpTkxtpa6",
+      "target": "4HcUvOUMU",
       "targetHandle": null,
       "id": "Om06rdyON"
     },
     {
       "source": "gkuRtonPh",
       "sourceHandle": "1",
-      "target": "wpTkxtpa6",
+      "target": "4HcUvOUMU",
       "targetHandle": null,
       "id": "hsk0Igg8z"
     },
     {
       "source": "4HcUvOUMU",
       "sourceHandle": "2",
-      "target": "gKEJKrzsJ",
+      "target": "AlwSubCmt",
       "targetHandle": null,
-      "id": "ET5jSNynx"
+      "id": "AlwSubE01"
     },
     {
-      "source": "fVVvOGSJL",
+      "source": "AlwSubCmt",
+      "sourceHandle": "1",
+      "target": "AlwSubExt",
+      "targetHandle": null,
+      "id": "AlwSubE02"
+    },
+    {
+      "source": "AlwSubExt",
+      "sourceHandle": "2",
+      "target": "AlwSubNo1",
+      "targetHandle": null,
+      "id": "AlwSubE03"
+    },
+    {
+      "source": "AlwSubExt",
+      "sourceHandle": "1",
+      "target": "AlwSubOk1",
+      "targetHandle": null,
+      "id": "AlwSubE04"
+    },
+    {
+      "source": "AlwSubExt",
+      "sourceHandle": "err1",
+      "target": "AlwSubEr1",
+      "targetHandle": null,
+      "id": "AlwSubE05"
+    },
+    {
+      "source": "AlwSubOk2",
+      "sourceHandle": "1",
+      "target": "AlwSubWrn",
+      "targetHandle": null,
+      "id": "AlwSubE13"
+    },
+    {
+      "source": "AlwSubNo1",
       "sourceHandle": "1",
       "target": "_d_3OOKXy",
       "targetHandle": null,
-      "id": "EHhgumaQc"
+      "id": "AlwSubE14"
     },
     {
-      "source": "h9hxgqzCE",
+      "source": "AlwSubEr1",
       "sourceHandle": "1",
       "target": "_d_3OOKXy",
       "targetHandle": null,
-      "id": "WcIVYpva5"
+      "id": "AlwSubE15"
     },
     {
-      "source": "vX8lBfgvT",
+      "source": "AlwSubWrn",
       "sourceHandle": "1",
       "target": "_d_3OOKXy",
       "targetHandle": null,
-      "id": "mhx-Z9yjc"
+      "id": "AlwSubE17"
     },
     {
       "source": "_d_3OOKXy",
@@ -1641,7 +1631,7 @@
     {
       "source": "om49ib9os",
       "sourceHandle": "1",
-      "target": "cX6BSrPmO",
+      "target": "ImgRm01",
       "targetHandle": null,
       "id": "3nelwz0c2"
     },
@@ -1655,7 +1645,7 @@
     {
       "source": "cX6BSrPmO",
       "sourceHandle": "1",
-      "target": "HOn7BNPij",
+      "target": "CTitle01",
       "targetHandle": null,
       "id": "2K-MnRvoI"
     },
@@ -1704,16 +1694,37 @@
     {
       "source": "82dLQJX1e",
       "sourceHandle": "2",
-      "target": "vqPIXNyua",
+      "target": "ClrSubChk",
       "targetHandle": null,
-      "id": "7XZhulNWX"
+      "id": "ClrSubE01"
     },
     {
       "source": "seR432XMi",
       "sourceHandle": "1",
+      "target": "ClrSubChk",
+      "targetHandle": null,
+      "id": "ClrSubE02"
+    },
+    {
+      "source": "ClrSubChk",
+      "sourceHandle": "1",
+      "target": "ClrSubCmd",
+      "targetHandle": null,
+      "id": "ClrSubE03"
+    },
+    {
+      "source": "ClrSubCmd",
+      "sourceHandle": "1",
       "target": "vqPIXNyua",
       "targetHandle": null,
-      "id": "-4oyhcRVL"
+      "id": "ClrSubE04"
+    },
+    {
+      "source": "ClrSubChk",
+      "sourceHandle": "2",
+      "target": "vqPIXNyua",
+      "targetHandle": null,
+      "id": "ClrSubE05"
     },
     {
       "source": "vqPIXNyua",
@@ -1998,7 +2009,7 @@
     {
       "source": "xMNtxs-Ct",
       "sourceHandle": "1",
-      "target": "gKEJKrzsJ",
+      "target": "_d_3OOKXy",
       "targetHandle": null,
       "id": "gfwbJgLF3"
     },
@@ -2096,9 +2107,93 @@
     {
       "source": "d8balkJHB",
       "sourceHandle": "1",
-      "target": "NCG23FkZ3",
+      "target": "OddChkTm01",
       "targetHandle": null,
       "id": "hpwx52a7y"
+    },
+    {
+      "source": "OddChkTm01",
+      "sourceHandle": "1",
+      "target": "OddChkDir1",
+      "targetHandle": null,
+      "id": "OddE1TmDir"
+    },
+    {
+      "source": "OddChkTm01",
+      "sourceHandle": "2",
+      "target": "NCG23FkZ3",
+      "targetHandle": null,
+      "id": "OddE2TmPas"
+    },
+    {
+      "source": "OddChkDir1",
+      "sourceHandle": "1",
+      "target": "OddFailMsg",
+      "targetHandle": null,
+      "id": "OddE3DirMsg"
+    },
+    {
+      "source": "OddChkDir1",
+      "sourceHandle": "2",
+      "target": "NCG23FkZ3",
+      "targetHandle": null,
+      "id": "OddE4DirPas"
+    },
+    {
+      "source": "OddFailMsg",
+      "sourceHandle": "1",
+      "target": "OddFailFl1",
+      "targetHandle": null,
+      "id": "OddE5MsgFail"
+    },
+    {
+      "source": "ImgRm01",
+      "sourceHandle": "1",
+      "target": "cX6BSrPmO",
+      "targetHandle": null,
+      "id": "eImgRm01c"
+    },
+    {
+      "source": "CTitle01",
+      "sourceHandle": "1",
+      "target": "CTitle02",
+      "targetHandle": null,
+      "id": "eCTitle01a"
+    },
+    {
+      "source": "CTitle02",
+      "sourceHandle": "1",
+      "target": "HOn7BNPij",
+      "targetHandle": null,
+      "id": "eCTitle02b"
+    },
+    {
+      "source": "AlwSubOk1",
+      "sourceHandle": "1",
+      "target": "AlwSubMvJs",
+      "targetHandle": null,
+      "id": "AlwSubE06"
+    },
+    {
+      "source": "AlwSubMvJs",
+      "sourceHandle": "1",
+      "target": "AlwSubOk2",
+      "targetHandle": null,
+      "id": "AlwSubE07"
+    },
+    {
+      "source": "YSy_qAvCn",
+      "sourceHandle": "1",
+      "target": "DbgSubMvJs",
+      "targetHandle": null,
+      "id": "DbgSubMvE1"
+    },
+    {
+      "source": "DbgSubMvJs",
+      "sourceHandle": "1",
+      "target": "CAY3YSQvk",
+      "targetHandle": null,
+      "id": "DbgSubMvE2"
     }
   ]
 }
