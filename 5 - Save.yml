@@ -167,6 +167,48 @@
       "fpEnabled": true
     },
     {
+      "name": "ℹ️ You can use a library variable rename_sidecars_compressed to rename Jellyfin sidecar/metadata files (.nfo, -thumb.jpg, and — if delete_trickplay didn't already remove it — the .trickplay folder) to match the video's new name when rename_group_compressed actually renamed it to '-compressed' this run.\nrename_sidecars_compressed = true. Runs AFTER delete_trickplay (in-place mode only — delete_trickplay never runs in test_mode): if delete_trickplay removed the .trickplay folder, there is nothing left here to rename; otherwise the .trickplay folder is renamed too. No-op if unset, or if the video wasn't renamed to -compressed this run.",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "RnScCmt1",
+      "position": {
+        "x": 1880,
+        "y": 1960
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - JS Rename Sidecars Compressed 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n\n  // NOTE: this code is duplicated verbatim in RnScJs01 (in-place path) and\n  // RnScJs02 (test_mode path) — Tdarr flow JSON has no shared-code mechanism,\n  // so keep BOTH nodes in sync when editing.\n\n  // Read the opt-in flag from the library variable. Blank/unset/anything other than \"true\" = no-op.\n  const renameEnabled = String(args.userVariables.library.rename_sidecars_compressed || \"\").trim().toLowerCase() === \"true\";\n\n  if (!renameEnabled) {\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1, // Continue the workflow\n      variables: args.variables, // Pass the updated variables\n    };\n  }\n\n  const fs = require(\"fs\");\n  const path = require(\"path\");\n\n  // Derive the ORIGINAL media base name from originalLibraryFile._id (the exact\n  // field js_rename_group_compressed and delete_trickplay both read), and the\n  // CURRENT base name from inputFileObj._id: js_rename_group_compressed runs\n  // earlier in this flow and mutates inputFileObj._id to the \"-compressed\" name\n  // when it actually renames the video, so by the time this node runs the two\n  // will differ ONLY if a rename actually happened this run.\n  const originalId = String(args.originalLibraryFile._id || \"\");\n  const originalExt = path.extname(originalId);\n  const originalBase = path.basename(originalId, originalExt);\n  const originalFullName = path.basename(originalId);\n\n  const currentId = String(args.inputFileObj._id || \"\");\n  const currentExt = path.extname(currentId);\n  const currentBase = path.basename(currentId, currentExt);\n  const currentFullName = path.basename(currentId);\n\n  // Only proceed when the video was ACTUALLY renamed to \"-compressed\" this run.\n  // js_rename_group_compressed leaves inputFileObj._id unchanged (equal to the\n  // original base name) when it's disabled, when the video wasn't re-encoded,\n  // when it's already renamed (idempotent skip), or when the rename target\n  // already existed (clobber guard) — all of those cases are no-ops here too.\n  // The !originalBase guard also prevents an empty original base name from\n  // prefix-matching (and renaming) every entry in the folder further below.\n  if (!originalBase || !currentBase || currentBase === originalBase) {\n    console.log(`rename_sidecars_compressed: base name unchanged or unavailable (\"${originalBase}\"), nothing to rename`);\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1,\n      variables: args.variables,\n    };\n  }\n\n  // Mirror js_rename_group_compressed's sidecarDir derivation exactly: test_mode\n  // -> output_dir_done + the ORIGINAL library file's library-relative subpath\n  // (the video's FINAL folder); otherwise -> the original file's own folder\n  // (in-place).\n  const testMode = String(args.userVariables.library.test_mode || \"\").trim().toLowerCase() === \"true\";\n  let mediaDir;\n  if (testMode) {\n    const outputDirDone = String(args.userVariables.library.output_dir_done || \"\").trim();\n    if (!outputDirDone) {\n      // Same misconfiguration rename_group_compressed throws loudly for; stay\n      // non-fatal here (nothing is ever copied into output_dir_done in\n      // test_mode today, so there is nothing to rename anyway) but don't let\n      // it pass as a silent ENOENT no-op either.\n      console.log(\"rename_sidecars_compressed: WARNING test_mode is enabled but output_dir_done is empty/unset; cannot locate the video's folder, so sidecars (if any) will not be renamed. Set the output_dir_done library variable.\");\n    }\n    const libFolder = String(args.librarySettings.folder || \"\");\n    const relStem = originalId.startsWith(libFolder) ? originalId.slice(libFolder.length) : originalId;\n    const subStem = relStem.split(\"/\").slice(0, -1).join(\"/\");\n    mediaDir = path.join(outputDirDone, subStem);\n  } else {\n    mediaDir = path.dirname(originalId);\n  }\n\n  const SUBTITLE_EXTS = [\"srt\", \"ass\", \"sub\", \"idx\"];\n\n  // Wrapped in try/catch so a failure only warns and never fails the flow\n  // (mirrors the non-fatal tolerance of neighboring Save nodes).\n  try {\n    // readdirSync throws ENOENT if the folder doesn't exist (e.g. in test_mode,\n    // where NFO/thumbnail/trickplay files are never copied into output_dir_done\n    // today); caught below as \"nothing to rename\".\n    for (const entry of fs.readdirSync(mediaDir)) {\n      // Skip the video itself and the subtitle sidecars: those are already\n      // renamed (or intentionally left alone) by js_rename_group_compressed,\n      // and must not be touched again here.\n      if (entry === originalFullName || entry === currentFullName) continue;\n      const entryExt = path.extname(entry).slice(1).toLowerCase();\n      if (SUBTITLE_EXTS.includes(entryExt)) continue;\n\n      // General full-match: anything whose name starts with the original base\n      // name is renamed, preserving whatever follows it (.nfo, -thumb.jpg,\n      // .trickplay, .mkv.trickplay, etc.) — this naturally covers Jellyfin's\n      // NFO, thumbnail, and trickplay sidecars without special-casing each one.\n      // This is a loose prefix match (no separator required after the base\n      // name), so an unrelated file/folder that happens to start with the same\n      // text would also be swept up and renamed.\n      if (!entry.startsWith(originalBase)) continue;\n\n      const suffix = entry.slice(originalBase.length);\n      const oldPath = path.join(mediaDir, entry);\n      const newPath = path.join(mediaDir, `${currentBase}${suffix}`);\n\n      if (oldPath === newPath) continue;\n\n      try {\n        if (fs.existsSync(newPath)) {\n          console.log(`rename_sidecars_compressed: target \"${newPath}\" already exists, skipping to avoid overwrite`);\n          continue;\n        }\n        fs.renameSync(oldPath, newPath);\n        console.log(`rename_sidecars_compressed: renamed \"${oldPath}\" -> \"${newPath}\"`);\n      } catch (err) {\n        // One bad entry shouldn't skip the rest.\n        console.log(`rename_sidecars_compressed: WARNING failed to rename \"${oldPath}\" -> \"${newPath}\": ${err.message}`);\n      }\n    }\n  } catch (err) {\n    if (err && err.code === \"ENOENT\") {\n      console.log(`rename_sidecars_compressed: no media directory \"${mediaDir}\", nothing to rename (${err.message})`);\n    } else {\n      console.log(`rename_sidecars_compressed: WARNING failed to scan media directory: ${err.message}`);\n    }\n  }\n\n  return {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1, // Continue the workflow\n    variables: args.variables, // Pass the updated variables\n  };\n};\n"
+      },
+      "id": "RnScJs01",
+      "position": {
+        "x": 1661.3992283374662,
+        "y": 2040
+      },
+      "fpEnabled": true
+    },
+    {
+      "name": "Save File - JS Rename Sidecars Compressed (test_mode) 🧮",
+      "sourceRepo": "Community",
+      "pluginName": "customFunction",
+      "version": "1.0.0",
+      "inputsDB": {
+        "code": "module.exports = async (args) => {\n\n  // NOTE: this code is duplicated verbatim in RnScJs01 (in-place path) and\n  // RnScJs02 (test_mode path) — Tdarr flow JSON has no shared-code mechanism,\n  // so keep BOTH nodes in sync when editing.\n\n  // Read the opt-in flag from the library variable. Blank/unset/anything other than \"true\" = no-op.\n  const renameEnabled = String(args.userVariables.library.rename_sidecars_compressed || \"\").trim().toLowerCase() === \"true\";\n\n  if (!renameEnabled) {\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1, // Continue the workflow\n      variables: args.variables, // Pass the updated variables\n    };\n  }\n\n  const fs = require(\"fs\");\n  const path = require(\"path\");\n\n  // Derive the ORIGINAL media base name from originalLibraryFile._id (the exact\n  // field js_rename_group_compressed and delete_trickplay both read), and the\n  // CURRENT base name from inputFileObj._id: js_rename_group_compressed runs\n  // earlier in this flow and mutates inputFileObj._id to the \"-compressed\" name\n  // when it actually renames the video, so by the time this node runs the two\n  // will differ ONLY if a rename actually happened this run.\n  const originalId = String(args.originalLibraryFile._id || \"\");\n  const originalExt = path.extname(originalId);\n  const originalBase = path.basename(originalId, originalExt);\n  const originalFullName = path.basename(originalId);\n\n  const currentId = String(args.inputFileObj._id || \"\");\n  const currentExt = path.extname(currentId);\n  const currentBase = path.basename(currentId, currentExt);\n  const currentFullName = path.basename(currentId);\n\n  // Only proceed when the video was ACTUALLY renamed to \"-compressed\" this run.\n  // js_rename_group_compressed leaves inputFileObj._id unchanged (equal to the\n  // original base name) when it's disabled, when the video wasn't re-encoded,\n  // when it's already renamed (idempotent skip), or when the rename target\n  // already existed (clobber guard) — all of those cases are no-ops here too.\n  // The !originalBase guard also prevents an empty original base name from\n  // prefix-matching (and renaming) every entry in the folder further below.\n  if (!originalBase || !currentBase || currentBase === originalBase) {\n    console.log(`rename_sidecars_compressed: base name unchanged or unavailable (\"${originalBase}\"), nothing to rename`);\n    return {\n      outputFileObj: args.inputFileObj,\n      outputNumber: 1,\n      variables: args.variables,\n    };\n  }\n\n  // Mirror js_rename_group_compressed's sidecarDir derivation exactly: test_mode\n  // -> output_dir_done + the ORIGINAL library file's library-relative subpath\n  // (the video's FINAL folder); otherwise -> the original file's own folder\n  // (in-place).\n  const testMode = String(args.userVariables.library.test_mode || \"\").trim().toLowerCase() === \"true\";\n  let mediaDir;\n  if (testMode) {\n    const outputDirDone = String(args.userVariables.library.output_dir_done || \"\").trim();\n    if (!outputDirDone) {\n      // Same misconfiguration rename_group_compressed throws loudly for; stay\n      // non-fatal here (nothing is ever copied into output_dir_done in\n      // test_mode today, so there is nothing to rename anyway) but don't let\n      // it pass as a silent ENOENT no-op either.\n      console.log(\"rename_sidecars_compressed: WARNING test_mode is enabled but output_dir_done is empty/unset; cannot locate the video's folder, so sidecars (if any) will not be renamed. Set the output_dir_done library variable.\");\n    }\n    const libFolder = String(args.librarySettings.folder || \"\");\n    const relStem = originalId.startsWith(libFolder) ? originalId.slice(libFolder.length) : originalId;\n    const subStem = relStem.split(\"/\").slice(0, -1).join(\"/\");\n    mediaDir = path.join(outputDirDone, subStem);\n  } else {\n    mediaDir = path.dirname(originalId);\n  }\n\n  const SUBTITLE_EXTS = [\"srt\", \"ass\", \"sub\", \"idx\"];\n\n  // Wrapped in try/catch so a failure only warns and never fails the flow\n  // (mirrors the non-fatal tolerance of neighboring Save nodes).\n  try {\n    // readdirSync throws ENOENT if the folder doesn't exist (e.g. in test_mode,\n    // where NFO/thumbnail/trickplay files are never copied into output_dir_done\n    // today); caught below as \"nothing to rename\".\n    for (const entry of fs.readdirSync(mediaDir)) {\n      // Skip the video itself and the subtitle sidecars: those are already\n      // renamed (or intentionally left alone) by js_rename_group_compressed,\n      // and must not be touched again here.\n      if (entry === originalFullName || entry === currentFullName) continue;\n      const entryExt = path.extname(entry).slice(1).toLowerCase();\n      if (SUBTITLE_EXTS.includes(entryExt)) continue;\n\n      // General full-match: anything whose name starts with the original base\n      // name is renamed, preserving whatever follows it (.nfo, -thumb.jpg,\n      // .trickplay, .mkv.trickplay, etc.) — this naturally covers Jellyfin's\n      // NFO, thumbnail, and trickplay sidecars without special-casing each one.\n      // This is a loose prefix match (no separator required after the base\n      // name), so an unrelated file/folder that happens to start with the same\n      // text would also be swept up and renamed.\n      if (!entry.startsWith(originalBase)) continue;\n\n      const suffix = entry.slice(originalBase.length);\n      const oldPath = path.join(mediaDir, entry);\n      const newPath = path.join(mediaDir, `${currentBase}${suffix}`);\n\n      if (oldPath === newPath) continue;\n\n      try {\n        if (fs.existsSync(newPath)) {\n          console.log(`rename_sidecars_compressed: target \"${newPath}\" already exists, skipping to avoid overwrite`);\n          continue;\n        }\n        fs.renameSync(oldPath, newPath);\n        console.log(`rename_sidecars_compressed: renamed \"${oldPath}\" -> \"${newPath}\"`);\n      } catch (err) {\n        // One bad entry shouldn't skip the rest.\n        console.log(`rename_sidecars_compressed: WARNING failed to rename \"${oldPath}\" -> \"${newPath}\": ${err.message}`);\n      }\n    }\n  } catch (err) {\n    if (err && err.code === \"ENOENT\") {\n      console.log(`rename_sidecars_compressed: no media directory \"${mediaDir}\", nothing to rename (${err.message})`);\n    } else {\n      console.log(`rename_sidecars_compressed: WARNING failed to scan media directory: ${err.message}`);\n    }\n  }\n\n  return {\n    outputFileObj: args.inputFileObj,\n    outputNumber: 1, // Continue the workflow\n    variables: args.variables, // Pass the updated variables\n  };\n};\n"
+      },
+      "id": "RnScJs02",
+      "position": {
+        "x": 1050,
+        "y": 1905
+      },
+      "fpEnabled": true
+    },
+    {
       "name": "Save File - Check Variable - error_duration 🔍",
       "sourceRepo": "Community",
       "pluginName": "checkFlowVariable",
@@ -877,9 +919,16 @@
     {
       "source": "DelTrkPly1",
       "sourceHandle": "1",
-      "target": "ko1ZB0KWL",
+      "target": "RnScJs01",
       "targetHandle": null,
       "id": "eDelTrk2Done"
+    },
+    {
+      "source": "RnScJs01",
+      "sourceHandle": "1",
+      "target": "ko1ZB0KWL",
+      "targetHandle": null,
+      "id": "eRnSc2Done"
     },
     {
       "source": "KM3GG8qTW",
@@ -1101,9 +1150,16 @@
     {
       "source": "cr8L1hv6W",
       "sourceHandle": "1",
-      "target": "Xzzidp1G7",
+      "target": "RnScJs02",
       "targetHandle": null,
       "id": "3ueoBc4kA"
+    },
+    {
+      "source": "RnScJs02",
+      "sourceHandle": "1",
+      "target": "Xzzidp1G7",
+      "targetHandle": null,
+      "id": "eRnSc2Skip"
     },
     {
       "source": "FrHoTizWG",

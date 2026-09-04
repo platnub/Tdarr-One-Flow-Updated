@@ -25,6 +25,7 @@ This is a fork of [samssausages' Tdarr - One Flow](https://github.com/samssausag
 - **🆕 `default_audio_language`** — give an ordered priority list of language codes (e.g. `eng,jpn`); the first one with a matching track becomes the default/auto-selected audio track.
 - **🆕 `rename_group_compressed`** — when a video is actually re-encoded, rename its release-group token to `compressed` (and rename matching subtitle sidecars alongside it so they stay associated).
 - **🆕 `delete_trickplay`** — after a compressed file replaces the original in-place, delete Jellyfin's leftover `.trickplay` folder for that media.
+- **🆕 `rename_sidecars_compressed`** — after `delete_trickplay` runs, rename Jellyfin sidecar/metadata files (`.nfo`, `-thumb.jpg`, and — if `delete_trickplay` didn't already remove it — the `.trickplay` folder) to match the video's new `-compressed` name.
 - **🆕 Simplified `test_mode`** — one switch to keep the source and save the transcoded output (plus extracted subs) to `output_dir_done` for safe testing. The old separate debug variable is gone.
 - **🆕 Leaner pipeline (performance)** — several redundant full-container remux passes were folded into the existing FFmpeg command chains, cutting the number of full-size cache copies written while processing large files.
 - **🆕 Fixed stream reordering** — a long-standing bug where stream reordering silently did nothing is fixed, so output streams are now actually grouped/ordered as intended.
@@ -79,6 +80,7 @@ Do a **test run first** so you can check the output and tune your settings befor
 - Deinterlace .ts files. (tv DVR broadcasts)
 - Export Embedded Subtitles — always extracted to Jellyfin-named external .srt files (MovieName.en.srt) into the video's exact final folder (including its test_mode subpath under output_dir_done), on every normal pass (not just failure-rescue retries). Embedded subtitle streams are removed from the output container after extraction. When rename_group_compressed renames a re-encoded video, the matching sidecars are renamed alongside it so they stay associated.
 - Skip already-compressed inputs — at the very start of the flow, any file whose name ends in the release-group token "-compressed" (the marker rename_group_compressed writes) is skipped: the flow ends immediately, gracefully, without transcoding and without failing. A title-internal hyphen (e.g. Spider-Man (2019)) is not mistaken for the marker.
+- Rename Jellyfin sidecar/metadata files to match a compressed rename — optional library variable rename_sidecars_compressed. After delete_trickplay runs, if rename_group_compressed actually renamed the video to "-compressed" this run, every file/folder in the media's folder whose name starts with the original base name is renamed to match (a general prefix rename, so it naturally covers the .nfo, -thumb.jpg, and .trickplay sidecars without special-casing each one). Video/subtitle sidecars already handled by rename_group_compressed are skipped. No-op if unset, or if the video wasn't renamed this run.
 
   
 
@@ -185,6 +187,8 @@ rename_group_compressed = true # When the VIDEO is actually re-encoded this run,
 
 delete_trickplay = true # After the compressed file has actually replaced the original in place, delete the media's Jellyfin trickplay folder (the folder next to the media named after it with a .trickplay extension, e.g. Movie (2019).trickplay or Movie (2019).mkv.trickplay). Does NOT run when the output failed the size-ratio check — a too-SMALL output is routed to output_dir_review, and a too-LARGE output hard-fails the flow (failFlow) — nor in test_mode, nor when unset. A deletion failure only logs a warning and never fails the flow. Default is false/unset (trickplay folder left in place).
 
+rename_sidecars_compressed = true # After delete_trickplay runs, if the video was actually renamed to "-compressed" this run (rename_group_compressed), rename every file/folder in the media's folder whose name starts with the original base name to match (e.g. Movie (2019).nfo -> Movie (2019)-compressed.nfo, Movie (2019)-thumb.jpg -> Movie (2019)-compressed-thumb.jpg). This is a general prefix rename, so it also covers the .trickplay folder (e.g. Movie (2019).trickplay or Movie (2019).mkv.trickplay) when delete_trickplay did NOT remove it first — if delete_trickplay is enabled the .trickplay folder is DELETED, not renamed; if delete_trickplay is not enabled, the .trickplay folder is RENAMED by this variable instead. Video and subtitle sidecar files already handled by rename_group_compressed (.srt/.ass/.sub/.idx) are skipped. An existing target is never overwritten (no-clobber) and a rename failure only logs a warning and never fails the flow. Works in both in-place and test_mode (folder derivation mirrors rename_group_compressed's sidecar logic), though in test_mode this is currently a no-op since NFO/thumbnail files are never copied into output_dir_done. No-op if unset, or if the video wasn't renamed to "-compressed" this run. Default is false/unset (sidecar/metadata files left unchanged).
+
 ```
 
 # Quality Examples
@@ -223,17 +227,17 @@ v_cq 19 # quality setting for cq fallback method. Scale of 0-51.  Where 0 is los
 
 bitrate_480p 800k # bitrate you want for given resolution
 
-bitrate_576p 1600k
+bitrate_576p 960k
 
-bitrate_720p 2400k
+bitrate_720p 1280k
 
-bitrate_1080p 3200k
+bitrate_1080p 1600k
 
-bitrate_1440p 4800k
+bitrate_1440p 2400k
 
-bitrate_4k 14000k
+bitrate_4k 6400k
 
-bitrate_4k_hdr 16000k
+bitrate_4k_hdr 8000k
 
 bitrate_audio 160k # Audio bitrate we will encode to.  This is PER CHANNEL
 
@@ -286,6 +290,7 @@ NEW FEATURES:
 - Added optional library variable default_audio_language.  Set an ordered priority list of language codes (e.g. eng,jpn); the first language in the list with a matching audio track is marked as the container's default/auto-selected track, and other audio tracks have their default flag cleared.  A single code (e.g. eng) works as a list of one.  Blank/unset = skipped, identical to previous behavior.  If the list is set but NO audio track matches any language in it, the step is also a no-op: existing default flags are left untouched (nothing is cleared or set).
 - Added optional library variable rename_group_compressed (default false). When true AND the video was actually re-encoded this run, renames the release-group token at the end of the output filename to "compressed" (appends it if no group token is present). Audio-only Opus recompression (video skipped/remuxed) does not trigger the rename. A title-internal hyphen (e.g. Spider-Man (2019)) is not mistaken for a release-group separator, and an existing "-compressed" target is never overwritten. Idempotent — already-renamed files are left alone. No effect on remux/video-skip-only files or when unset.
 - Added optional library variable delete_trickplay (default false). When true, deletes the media's Jellyfin trickplay folder (named after the media with a .trickplay extension; both the base and full-filename naming conventions are checked) only after the compressed file has actually replaced the original in place. It does not run when the file was routed to review by the size-ratio check, nor in test_mode, nor when unset. A deletion failure only logs a warning and never fails the flow.
+- Added optional library variable rename_sidecars_compressed (default false). After delete_trickplay runs, if the video was actually renamed to "-compressed" this run, every file/folder in the media's folder whose name starts with the original base name is renamed to match — a general prefix rename that covers Jellyfin's .nfo and -thumb.jpg sidecars, and (when delete_trickplay did NOT already remove it) the .trickplay folder too. Video and subtitle-sidecar files already handled by rename_group_compressed are skipped. No-clobber and non-fatal on failure, matching the neighboring Save-step conventions. Works in both in-place and test_mode (folder derivation mirrors rename_group_compressed's sidecar logic), though today this is a no-op in test_mode since NFO/thumbnail files are never copied into output_dir_done.
 - Added a start-of-flow skip for already-compressed inputs (1 - Input). Immediately after the input file is found, any file whose name ends in the trailing "-compressed" release-group token is skipped: the flow ends gracefully without transcoding, without going to Flow 2 Prep, and without failing (no failFlow). This pairs with rename_group_compressed — files it renamed on a prior run are not needlessly re-encoded. IMPORTANT: this skip is UNCONDITIONAL — it reads no library variable and is NOT gated on rename_group_compressed (or any opt-in). Any input whose base name ends in a trailing "-compressed" token is skipped even if you never enabled rename_group_compressed, so a file you legitimately named "Something-compressed.mkv" will also be skipped. The trailing-token match is case-insensitive and mirrors rename_group_compressed's tokenization exactly (final hyphen-delimited segment, whitespace-free), so a title-internal hyphen (e.g. Spider-Man (2019)) and untagged files (e.g. Movie-RARBG.mkv) continue down the normal path unchanged.
 - Added centralized AV1 flow variables in 1 - Input (fl_av1_nvenc_quality, fl_av1_nvenc_main, fl_av1_nvenc_b-frames, fl_av1_qsv_quality, fl_av1_qsv_main, fl_av1_cpu_quality, fl_av1_cpu_main). The clear_default_subtitle feature also adds a companion flow variable fl_clear_default_subtitle_args in 1 - Input (default `-disposition:s 0`), applied by 2 - Prep when clear_default_subtitle is true.
 - Added AV1 encoder flag references under ffmpeg_docs/ (flags_av1_nvenc.md, flags_av1_qsv.md, flags_libsvtav1.md, plus vaapi/amf stubs).
